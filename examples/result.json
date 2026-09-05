@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "metrics": {
+    "power_mw": 32.8,
+    "tns_ns": 0.0,
+    "wns_ns": 0.125
+  },
+  "run_id": "REPLACE_WITH_CAPTURED_RUN_ID",
+  "schema": "opentapeout.result/v1",
+  "status": "pass",
+  "violations": []
+}
