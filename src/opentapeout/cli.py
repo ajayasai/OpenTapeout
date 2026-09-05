@@ -9,6 +9,7 @@ from pathlib import Path
 
 from . import __version__
 from .bundle import seal, verify_bundle
+from .commands import register as register_commands, dispatch as dispatch_commands
 from .engine import Engine
 from .git_capture import inspect_git
 from .policy import default_policy
@@ -55,13 +56,13 @@ def parser() -> argparse.ArgumentParser:
         p.add_argument("--corner", required=True)
         if cmd == "run":
             p.add_argument("--report", required=True)
-            p.add_argument("--format", choices=["json", "junit", "klayout-rdb", "csv"], default="json")
+            p.add_argument("--format", choices=["json", "junit", "klayout-rdb", "csv", "yosys-sat"], default="json")
             p.add_argument("--timeout", type=float, default=3600)
     p = sub.add_parser("finish", help="Import a report for a previously captured run (unmanaged mode)")
     p.add_argument("run_id")
     p.add_argument("--report", required=True)
     p.add_argument("--exit-code", required=True, type=int)
-    p.add_argument("--format", choices=["json", "junit", "klayout-rdb", "csv"], default="json")
+    p.add_argument("--format", choices=["json", "junit", "klayout-rdb", "csv", "yosys-sat"], default="json")
     p = sub.add_parser("candidate", help="Freeze evidence and delivery scope")
     p.add_argument("name")
     p.add_argument("--notes", required=True, help="Release notes, or @UTF8-file")
@@ -91,6 +92,8 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--key", required=True, type=Path)
     p = sub.add_parser("verify", help="Verify an archive offline against external policy and keys")
     p.add_argument("archive", type=Path)
+    p.add_argument("--status", type=Path, help="Fresh externally supplied signed release-status statement")
+    p.add_argument("--min-status-seq", type=int, default=0, help="Externally retained anti-replay high-water sequence")
     p = sub.add_parser("receipt", help="Compare an operator-supplied foundry upload checksum")
     p.add_argument("release")
     p.add_argument("--sha256", required=True)
@@ -112,6 +115,7 @@ def parser() -> argparse.ArgumentParser:
     p = sub.add_parser("serve", help="Read-only dashboard/API; never exposes signing operations")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8080)
+    register_commands(sub)
     return root
 
 
@@ -140,6 +144,9 @@ def dispatch(args: argparse.Namespace) -> tuple[object, int]:
         password = os.environ.get("OT_KEY_PASSWORD")
         return load_key(args.key, password.encode() if password else None)
     cmd = args.command
+    extended = dispatch_commands(args, policy, trust, key)
+    if extended is not None:
+        return extended
     if cmd == "keygen":
         password = os.environ.get("OT_KEY_PASSWORD")
         return generate_key(args.output, password=password.encode() if password else None), 0
@@ -162,7 +169,8 @@ def dispatch(args: argparse.Namespace) -> tuple[object, int]:
         return {"project": engine.state()["project"], "policy": str(policy_path),
                 "next": "Generate reviewer keys, add their public keys to trust.json, and register inputs."}, 0
     if cmd == "verify":
-        return verify_bundle(args.archive, policy(), trust()), 0
+        return verify_bundle(args.archive, policy(), trust(),
+            status=read_json(args.status) if args.status else None, minimum_status_sequence=args.min_status_seq), 0
     engine = Engine(args.root)
     if cmd == "register":
         metadata = read_json(args.metadata[1:]) if args.metadata.startswith("@") else loads(args.metadata)

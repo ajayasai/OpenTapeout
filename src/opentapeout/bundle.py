@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from .engine import Engine, object_refs, state_from
 from .policy import evaluate, validate_policy
+from .lifecycle import active_approvals, check_candidate_status
 from .signing import Trust, sign
 from .util import (CHUNK, MAX_JSON_BYTES, TapeoutError, canonical, digest, ensure, file_digest,
                    hash_stream, identifier, loads, now, safe_relative, timestamp)
@@ -53,7 +54,7 @@ def seal(engine: Engine, name: str, output: Path, key: Ed25519PrivateKey, policy
             gate = engine._gate(tx, name, policy, trust)
             ensure(gate["ready"], f"Release blocked: {gate['blockers']}")
             candidate = state["candidates"][name]
-            approvals = [a for a in state["approvals"] if a["payload"]["candidate_sha256"] == digest(candidate)]
+            approvals = [a for a in active_approvals(state) if a["payload"]["candidate_sha256"] == digest(candidate)]
             sources, files, object_index = {}, {}, {}
             for checksum in sorted(object_refs(candidate)):
                 source = engine.store.verify_object(checksum)
@@ -98,9 +99,11 @@ def seal(engine: Engine, name: str, output: Path, key: Ed25519PrivateKey, policy
             os.unlink(temporary)
 
 
-def verify_bundle(path: Path, policy: dict, trust: Trust, *, max_total: int = MAX_TOTAL) -> dict:
+def verify_bundle(path: Path, policy: dict, trust: Trust, *, max_total: int = MAX_TOTAL,
+                  status: dict | None = None, minimum_status_sequence: int = 0) -> dict:
     """Never extracts files. Trust/policy come from the caller, not the archive."""
     validate_policy(policy)
+    ensure(status is not None or minimum_status_sequence == 0, "A status statement is required for anti-replay verification")
     try:
         with zipfile.ZipFile(path) as archive:
             infos = archive.infolist()
@@ -129,7 +132,11 @@ def verify_bundle(path: Path, policy: dict, trust: Trust, *, max_total: int = MA
             ensure(digest(candidate) == manifest["candidate_sha256"], "Candidate digest mismatch")
             ensure(digest(manifest["policy"]) == digest(policy) == candidate["policy_sha256"],
                    "External policy does not match signed candidate")
-            gate = evaluate(candidate, policy, trust, manifest["approvals"], at=manifest["created_at"])
+            approvals, status_result = manifest["approvals"], None
+            if status is not None:
+                approvals, status_result = check_candidate_status(candidate, approvals, status, trust,
+                    minimum_sequence=minimum_status_sequence)
+            gate = evaluate(candidate, policy, trust, approvals, at=manifest["created_at"])
             ensure(gate["ready"], f"Signed release fails historical gate: {gate['blockers']}")
             files = manifest["files"]
             ensure(set(names) == set(files) | METADATA, "Missing or unexpected archive members")
@@ -148,7 +155,7 @@ def verify_bundle(path: Path, policy: dict, trust: Trust, *, max_total: int = MA
             return {"verified": True, "verification_scope": "historical signed evidence, not current design or foundry acceptance",
                     "candidate_sha256": digest(candidate), "manifest_sha256": digest(manifest),
                     "signer": signer, "objects": len(manifest["object_index"]),
-                    "files": len(files), "gate": gate}
+                    "files": len(files), "gate": gate, "release_status": status_result}
     except (OSError, zipfile.BadZipFile, KeyError, TypeError, ValueError) as exc:
         if isinstance(exc, TapeoutError):
             raise

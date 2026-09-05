@@ -30,8 +30,8 @@ def validate_policy(policy: dict) -> dict:
         kinds = check["required_resource_kinds"]
         ensure(isinstance(kinds, list) and bool(kinds) and all(k in KINDS for k in kinds),
                "Invalid required resource kinds")
-        ensure(finite_number(check["max_age_hours"]) and check["max_age_hours"] > 0,
-               "Check maximum age must be positive")
+        ensure(finite_number(check["max_age_hours"]) and 0 < check["max_age_hours"] <= 876000,
+               "Check maximum age must be positive and at most 100 years")
         ensure(isinstance(check["metrics"], dict), "Metric thresholds must be an object")
         for name, limits in check["metrics"].items():
             ensure(isinstance(name, str) and isinstance(limits, dict) and bool(limits)
@@ -45,8 +45,8 @@ def validate_policy(policy: dict) -> dict:
     for key in ("distinct_approvers", "forbid_self_approval", "require_managed_runs", "require_delivery",
                 "require_git", "require_hashed_pdk"):
         ensure(type(policy[key]) is bool, f"{key} must be a boolean")
-    ensure(finite_number(policy["max_approval_age_hours"]) and policy["max_approval_age_hours"] > 0,
-           "Approval maximum age must be positive")
+    ensure(finite_number(policy["max_approval_age_hours"]) and 0 < policy["max_approval_age_hours"] <= 876000,
+           "Approval maximum age must be positive and at most 100 years")
     return policy
 
 

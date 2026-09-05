@@ -4,7 +4,9 @@ from __future__ import annotations
 import secrets
 from pathlib import Path
 
+from . import __version__
 from .engine import Engine
+from .planning import plan, compare
 from .graph import Graph
 from .signing import Trust
 from .util import TapeoutError, digest, read_json
@@ -29,6 +31,9 @@ def summary(engine: Engine, policy: dict, trust: Trust) -> dict:
             "runs": list(state["runs"].values()), "waivers": list(state["waivers"].values()),
             "approvals": state["approvals"], "releases": list(state["releases"].values()),
             "receipts": state["receipts"], "checkpoint": engine.store.verify_checkpoint(),
+            "approval_states": [{"sha256": digest(a), "revoked": digest(a) in state["revoked_approvals"]} for a in state["approvals"]],
+            "withdrawals": list(state["withdrawals"].values()), "delivery_capsules": list(state["deliveries"].values()),
+            "signed_receipts": state["delivery_receipts"],
             "mode": "read-only", "synthetic": "SYNTHETIC" in state["project"]["name"]}
 
 
@@ -41,7 +46,7 @@ def create_app(root: Path, policy_file: Path | None = None, trust_file: Path | N
     engine = Engine(root)
     policy_file = policy_file or engine.root / "policy.json"
     trust_file = trust_file or engine.root / "trust.json"
-    app = FastAPI(title="OpenTapeout read-only API", version="0.1.0", docs_url=None, redoc_url=None,
+    app = FastAPI(title="OpenTapeout read-only API", version=__version__, docs_url=None, redoc_url=None,
                   openapi_url=None)
     if not token:
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
@@ -76,7 +81,7 @@ def create_app(root: Path, policy_file: Path | None = None, trust_file: Path | N
 
     @app.get("/static/{name}")
     def static(name: str):
-        if name not in {"app.js", "style.css"}:
+        if name not in {"app.js", "control.js", "style.css"}:
             return JSONResponse({"error": "Not found"}, status_code=404)
         return FileResponse(STATIC / name)
 
@@ -99,6 +104,15 @@ def create_app(root: Path, policy_file: Path | None = None, trust_file: Path | N
     @app.get("/api/diff/{before}/{after}")
     def diff(before: str, after: str):
         return engine.diff(before, after)
+
+    @app.get("/api/plan")
+    def rebuild_plan(name: str | None = None, changed: str = ""):
+        return plan(engine, read_json(policy_file), Trust.from_file(trust_file),
+                    candidate_name=name, changed=changed.split(",") if changed else [])
+
+    @app.get("/api/compare/{before}/{after}")
+    def compare_candidates(before: str, after: str):
+        return compare(engine, before, after)
 
     @app.get("/api/audit")
     def audit():

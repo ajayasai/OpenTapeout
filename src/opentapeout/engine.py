@@ -16,12 +16,13 @@ from .policy import check_key, evaluate, evidence_digest, validate_policy
 from .signing import Trust, sign
 from .store import Store, Transaction
 from .util import (TapeoutError, canonical, digest, ensure, identifier, now, safe_relative,
-                   timestamp, workspace_file)
+                   timestamp, workspace_file, finite_number)
 
 
 def state_from(events: list[dict]) -> dict:
     state = {"project": None, "resources": {}, "runs": {}, "waivers": {}, "revoked_waivers": set(),
-             "candidates": {}, "approvals": [], "releases": {}, "receipts": []}
+             "candidates": {}, "approvals": [], "releases": {}, "receipts": [],
+             "revoked_approvals": {}, "withdrawals": {}, "deliveries": {}, "delivery_receipts": []}
     for event in events:
         kind, payload = event["type"], event["payload"]
         if kind == "project.created":
@@ -42,6 +43,14 @@ def state_from(events: list[dict]) -> dict:
             state["candidates"][payload["id"]] = payload["candidate"]
         elif kind == "approval.signed":
             state["approvals"].append(payload)
+        elif kind == "approval.revoked":
+            state["revoked_approvals"][payload["payload"]["approval_sha256"]] = payload
+        elif kind == "release.withdrawn":
+            state["withdrawals"][payload["payload"]["candidate_sha256"]] = payload
+        elif kind == "delivery.sealed":
+            state["deliveries"][payload["id"]] = payload
+        elif kind == "delivery.received":
+            state["delivery_receipts"].append(payload)
         elif kind == "release.sealed":
             state["releases"][payload["id"]] = payload
         elif kind == "receipt.recorded":
@@ -66,11 +75,15 @@ def object_refs(candidate: dict) -> set[str]:
 
 
 def scope_view(state: dict, candidate: dict, policy: dict, trust: Trust) -> dict:
+    latest_by_check = {}
+    for run in state["runs"].values():
+        scope = check_key(run)
+        if scope not in latest_by_check or run["sequence"] > latest_by_check[scope]["sequence"]:
+            latest_by_check[scope] = run
     runs = {}
     for check in policy["required_checks"]:
-        matching = [r for r in state["runs"].values() if check_key(r) == check_key(check)]
-        if matching:
-            latest = max(matching, key=lambda run: run["sequence"])
+        latest = latest_by_check.get(check_key(check))
+        if latest is not None:
             runs[latest["id"]] = copy.deepcopy(latest)
     waivers = [envelope for key, envelope in state["waivers"].items()
                if key not in state["revoked_waivers"] and envelope["payload"]["run_id"] in runs]
@@ -176,6 +189,8 @@ class Engine:
                 with self.store.verify_object(report_hash).open("rb") as handle:
                     raw = handle.read(MAX_REPORT + 1)
                 try:
+                    ensure(format_name != "yosys-sat" or run["kind"] == "FORMAL",
+                           "Yosys SAT evidence can only satisfy a FORMAL check")
                     result = parse(raw, format_name, run_id)
                 except TapeoutError as exc:
                     parser_error = str(exc)
@@ -202,7 +217,7 @@ class Engine:
         """Execute the explicitly registered argv, without a shell. This is not a sandbox."""
         safe_relative(report)
         ensure(not (self.root / report).exists(), "Output report already exists; refusing stale-report reuse")
-        ensure(timeout > 0, "Timeout must be positive")
+        ensure(finite_number(timeout) and 0 < timeout <= 31536000, "Timeout must be finite, positive and at most one year")
         run_id = self.begin(kind, inputs, tool, corner, actor)
         tool_spec = self.state()["runs"][run_id]["tool_spec"]
         logs = self.store.directory / "logs"
@@ -296,8 +311,12 @@ class Engine:
         ensure(name in state["candidates"], "Unknown candidate")
         candidate = state["candidates"][name]
         at = now()
-        report = evaluate(candidate, policy, trust, state["approvals"], at=at,
+        from .lifecycle import active_approvals
+        report = evaluate(candidate, policy, trust, active_approvals(state), at=at,
                           include_approvals=include_approvals)
+        if digest(candidate) in state["withdrawals"]:
+            report["blockers"].append({"code": "RELEASE_WITHDRAWN", "scope": name,
+                "message": "This release was withdrawn. Issue a new candidate; history is preserved."})
         current = scope_view(state, candidate, policy, trust)
         if digest(current) != digest(candidate):
             report["blockers"].append({"code": "CANDIDATE_CHANGED", "scope": name,

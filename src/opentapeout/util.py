@@ -95,7 +95,10 @@ def timestamp(value: str) -> datetime:
 
 
 def finite_number(value: Any) -> bool:
-    return type(value) in (int, float) and math.isfinite(value)
+    try:
+        return type(value) in (int, float) and math.isfinite(value)
+    except OverflowError:
+        return False
 
 
 def safe_relative(value: str) -> str:

@@ -6,6 +6,7 @@
 <title>OpenTapeout · Release control</title>
 <link rel="stylesheet" href="/static/style.css">
 <script defer src="/static/app.js"></script>
+<script defer src="/static/control.js"></script>
 </head>
 <body>
 <aside class="sidebar">
@@ -16,10 +17,12 @@
 <button class="nav active" data-view="overview"><span>◈</span> Release overview</button>
 <button class="nav" data-view="evidence"><span>▤</span> Signoff evidence <em id="nav-count">0</em></button>
 <button class="nav" data-view="dependencies"><span>⌘</span> Dependencies</button>
+<button class="nav" data-view="planning"><span>↗</span> Change planning</button>
+<button class="nav" data-view="lifecycle"><span>▣</span> Delivery lifecycle</button>
 <button class="nav" data-view="approvals"><span>◎</span> Approvals & waivers</button>
 <button class="nav" data-view="audit"><span>≡</span> Audit ledger</button>
 </nav>
-<div class="sidebar-bottom"><span class="pulse"></span> Offline-first · no telemetry<p>Read-only review surface<br>Signing remains outside the browser.</p><span class="version">OPEN SOURCE / v0.1.0 ALPHA</span></div>
+<div class="sidebar-bottom"><span class="pulse"></span> Offline-first · no telemetry<p>Read-only review surface<br>Signing remains outside the browser.</p><span class="version">OPEN SOURCE / v0.2.0 ALPHA</span></div>
 </aside>
 <div class="page">
 <header class="topbar"><div><span class="muted">Workspace</span><span class="breadcrumb">/</span><strong id="breadcrumb">Release overview</strong></div><div class="top-actions"><span id="demo-pill" class="pill demo hidden">SYNTHETIC DEMO</span><span class="pill">READ ONLY</span><button class="icon-button" id="refresh">↻ Refresh</button></div></header>
@@ -37,6 +40,15 @@
 <section id="evidence" class="view hidden"><div class="toolbar"><input id="search" placeholder="Filter by check, corner, tool or run ID" aria-label="Filter evidence"><span class="muted">Select a run to inspect its captured evidence.</span></div><div id="evidence-list" class="card"></div><pre id="run-detail" class="detail hidden"></pre></section>
 <section id="dependencies" class="view hidden"><div class="card"><div class="card-heading"><div><h2>Dependency graph</h2><p>Content hashes, derivation pins and the inputs that make a result obsolete.</p></div></div><div id="resource-table"></div></div><div id="impact-detail" class="card hidden"></div></section>
 <section id="approvals" class="view hidden"><div class="two-column"><div class="card"><div class="card-heading"><h2>Reviewer signatures</h2></div><div id="approval-list"></div></div><div class="card"><div class="card-heading"><h2>Evidence-bound waivers</h2></div><div id="waiver-list"></div></div></div><div class="notice">This browser cannot approve, waive, mutate evidence, or access signing keys. Use the CLI with your external trust policy.</div></section>
+<section id="planning" class="view hidden">
+<div class="notice">Read-only planning. Hypothetical changes never alter the ledger, execute tools, or bypass approval.</div>
+<div class="toolbar"><label>Change scenario <select id="plan-change" aria-label="Hypothetical change"></select></label><button id="plan-run" class="button-secondary">Calculate plan</button></div>
+<div class="card"><div class="card-heading"><div><h2>Rebuild order</h2><p id="plan-summary">Calculate the affected resources and reusable checks.</p></div></div><div id="plan-resources"></div></div>
+<div class="card"><div class="card-heading"><h2>Signoff rerun plan</h2></div><div id="plan-checks"></div></div>
+<div class="toolbar"><label>Before <select id="compare-before" aria-label="Before candidate"></select></label><label>After <select id="compare-after" aria-label="After candidate"></select></label><button id="compare-run" class="button-secondary">Compare metrics</button></div>
+<div class="card"><div class="card-heading"><div><h2>Candidate comparison</h2><p id="comparison-summary">Compare immutable evidence, not mutable workspace files.</p></div></div><div id="comparison-metrics"></div></div>
+</section>
+<section id="lifecycle" class="view hidden"><div class="notice" id="withdrawal-state"></div><div class="card"><div class="card-heading"><div><h2>Recipient-bound deliveries</h2><p>Minimal allowlisted capsules; private evidence is not included. Receipt signatures acknowledge bytes, not foundry acceptance.</p></div></div><div id="delivery-list"></div></div></section>
 <section id="audit" class="view hidden"><div class="card"><div class="card-heading"><div><h2>Append-only audit history</h2><p>Preserve an external signed checkpoint to detect history rewriting or truncation.</p></div><span id="ledger-head" class="mono"></span></div><div id="audit-list"></div></div></section>
 <footer><span>OpenTapeout · Evidence is only as trustworthy as its capture boundary.</span><span id="last-updated">Not yet loaded</span></footer>
 </main></div>

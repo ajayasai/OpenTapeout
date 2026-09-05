@@ -60,6 +60,9 @@ def _xml(data: bytes) -> ET.Element:
 
 def parse(data: bytes, format_name: str, run_id: str) -> dict:
     ensure(len(data) <= MAX_REPORT, "Report exceeds parser size limit; use a normalized summary")
+    if format_name == "yosys-sat":
+        from .native import yosys_sat
+        return yosys_sat(data, run_id)
     if format_name == "json":
         return validate_result(loads(data), run_id)
     result = {"schema": SCHEMA, "run_id": run_id, "status": "pass", "complete": True,
