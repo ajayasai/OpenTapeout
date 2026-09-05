@@ -1,0 +1,9 @@
+{
+  "browser": "144.0.7559.96",
+  "offline-embedded": {
+    "passed": true,
+    "audit_events": 30,
+    "javascript_errors": [],
+    "mobile_overflow": false
+  }
+}
