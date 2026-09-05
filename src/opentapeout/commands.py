@@ -8,10 +8,12 @@ from .planning import compare, plan
 from .util import read_json, write_json
 
 COMMANDS = {"plan", "compare", "revoke-approval", "withdraw", "release-status", "disclosure",
-            "deliver", "verify-delivery", "sign-receipt", "record-receipt"}
+            "deliver", "verify-delivery", "sign-receipt", "record-receipt", "pin-policy"}
 
 
 def register(sub) -> None:
+    p = sub.add_parser("pin-policy", help="Write an exact-input policy v2 for review; never authorizes release")
+    p.add_argument("--output", required=True, type=Path)
     p = sub.add_parser("plan", help="Explain rebuild order and reusable checks; never executes or authorizes")
     p.add_argument("name", nargs="?")
     p.add_argument("--changed", nargs="*", default=[], help="Read-only hypothetical resource changes")
@@ -62,6 +64,12 @@ def dispatch(args, policy, trust, key):
         write_json(args.output, envelope)
         return {"receipt": str(args.output), "signature": envelope}, 0
     engine = Engine(args.root)
+    if cmd == "pin-policy":
+        from .pinning import pin_policy
+        value = pin_policy(engine, policy())
+        write_json(args.output, value)
+        return {"policy": str(args.output), "review_required": True,
+                "warning": "Review every input, tool, rule and corner. Pinning does not infer missing dependencies or authorize release."}, 0
     if cmd == "plan":
         return plan(engine, policy(), trust(), candidate_name=args.name, changed=args.changed), 0
     if cmd == "compare":

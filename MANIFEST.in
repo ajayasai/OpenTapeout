@@ -2,8 +2,8 @@ include LICENSE README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md Dockerfile ac
 include .gitignore .dockerignore
 recursive-include src/opentapeout *.py py.typed *.html *.css *.js
 recursive-include tests *.py
-recursive-include scripts *.py
+recursive-include scripts *.py *.sh
 recursive-include docs *.md *.json *.html *.png *.xml *.log
-recursive-include examples *.json
+recursive-include examples *.json *.rb *.lydrc *.lylvs *.cir *.v *.sdc *.tcl *.lib *.md
 recursive-include .github *.yml *.md
 global-exclude *.pyc

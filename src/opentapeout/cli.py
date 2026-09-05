@@ -12,6 +12,7 @@ from .bundle import seal, verify_bundle
 from .commands import register as register_commands, dispatch as dispatch_commands
 from .engine import Engine
 from .git_capture import inspect_git
+from .parsers import FORMATS
 from .policy import default_policy
 from .signing import Trust, generate_key, load_key, sign
 from .util import TapeoutError, ensure, loads, now, read_json, write_json
@@ -56,13 +57,14 @@ def parser() -> argparse.ArgumentParser:
         p.add_argument("--corner", required=True)
         if cmd == "run":
             p.add_argument("--report", required=True)
-            p.add_argument("--format", choices=["json", "junit", "klayout-rdb", "csv", "yosys-sat"], default="json")
+            p.add_argument("--format", choices=sorted(FORMATS), default="json")
             p.add_argument("--timeout", type=float, default=3600)
+            p.add_argument("--report-source", choices=["file", "stdout"], default="file")
     p = sub.add_parser("finish", help="Import a report for a previously captured run (unmanaged mode)")
     p.add_argument("run_id")
     p.add_argument("--report", required=True)
     p.add_argument("--exit-code", required=True, type=int)
-    p.add_argument("--format", choices=["json", "junit", "klayout-rdb", "csv", "yosys-sat"], default="json")
+    p.add_argument("--format", choices=sorted(FORMATS), default="json")
     p = sub.add_parser("candidate", help="Freeze evidence and delivery scope")
     p.add_argument("name")
     p.add_argument("--notes", required=True, help="Release notes, or @UTF8-file")
@@ -187,7 +189,7 @@ def dispatch(args: argparse.Namespace) -> tuple[object, int]:
         return {"run_id": engine.begin(args.kind, args.inputs, args.tool, args.corner, args.actor)}, 0
     if cmd == "run":
         result = engine.run(args.kind, args.inputs, args.tool, args.corner, args.report, format_name=args.format,
-                            timeout=args.timeout, actor=args.actor)
+                            timeout=args.timeout, actor=args.actor, report_source=args.report_source)
         successful = result["exit_code"] == 0 and result["result"]["status"] == "pass" and not result["input_drift"]
         return result, 0 if successful else 2
     if cmd == "finish":

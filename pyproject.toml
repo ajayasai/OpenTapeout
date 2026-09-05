@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opentapeout"
-version = "0.2.0"
+version = "0.3.0"
 description = "Content-addressed tapeout evidence, dependency-aware freshness, and signed release gates"
 readme = "README.md"
 requires-python = ">=3.11"
