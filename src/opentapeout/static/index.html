@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="OpenTapeout — verifiable tapeout evidence and release gates.">
+<title>OpenTapeout · Release control</title>
+<link rel="stylesheet" href="/static/style.css">
+<script defer src="/static/app.js"></script>
+</head>
+<body>
+<aside class="sidebar">
+<a class="brand" href="#overview"><span class="brand-icon">OT</span><span>OpenTapeout<small>EVIDENCE → RELEASE</small></span></a>
+<div class="workspace-label">WORKSPACE</div>
+<div class="project-mark"><span class="project-square">A</span><span id="project-label">Loading project…<small>Silicon release engineering</small></span></div>
+<nav aria-label="Main navigation">
+<button class="nav active" data-view="overview"><span>◈</span> Release overview</button>
+<button class="nav" data-view="evidence"><span>▤</span> Signoff evidence <em id="nav-count">0</em></button>
+<button class="nav" data-view="dependencies"><span>⌘</span> Dependencies</button>
+<button class="nav" data-view="approvals"><span>◎</span> Approvals & waivers</button>
+<button class="nav" data-view="audit"><span>≡</span> Audit ledger</button>
+</nav>
+<div class="sidebar-bottom"><span class="pulse"></span> Offline-first · no telemetry<p>Read-only review surface<br>Signing remains outside the browser.</p><span class="version">OPEN SOURCE / v0.1.0 ALPHA</span></div>
+</aside>
+<div class="page">
+<header class="topbar"><div><span class="muted">Workspace</span><span class="breadcrumb">/</span><strong id="breadcrumb">Release overview</strong></div><div class="top-actions"><span id="demo-pill" class="pill demo hidden">SYNTHETIC DEMO</span><span class="pill">READ ONLY</span><button class="icon-button" id="refresh">↻ Refresh</button></div></header>
+<main>
+<div id="error" class="error hidden" role="alert"></div>
+<div id="auth" class="auth hidden"><label>API access token <input id="token" type="password" autocomplete="off" placeholder="Token stays in this page's memory"></label><button id="connect">Connect</button></div>
+<div class="heading"><div><div class="eyebrow">RELEASE CONTROL CENTER</div><h1 id="view-title">Every result. The right revision.</h1><p id="subtitle">Trace signoff evidence from exact inputs to an independently verifiable release.</p></div><button id="export-json" class="button-secondary">↓ Export review JSON</button></div>
+<div class="project-banner"><span id="project-name">Loading…</span><div><span class="muted">Candidate</span> <select id="candidate-select" aria-label="Release candidate"></select><span id="digest-short" class="mono muted"></span></div></div>
+<section id="overview" class="view">
+<div id="gate-banner" class="gate-banner"><div class="gate-symbol" id="gate-symbol">◎</div><div><strong id="gate-heading">Evaluating release gate…</strong><p id="gate-description">Checking evidence integrity, dependencies, policy and reviewer signatures.</p></div><span id="gate-badge" class="pill">CHECKING</span></div>
+<div class="metrics"><article><span>Signoff checks</span><strong id="metric-checks">—</strong><small id="metric-checks-desc">Required kind / corner combinations</small></article><article><span>Bound resources</span><strong id="metric-resources">—</strong><small>Hashed files and pinned definitions</small></article><article><span>Authorized approvals</span><strong id="metric-approvals">—</strong><small>Exact-candidate Ed25519 signatures</small></article><article><span>Ledger events</span><strong id="metric-events">—</strong><small>Verified, hash-linked audit history</small></article></div>
+<div class="two-column"><div class="card"><div class="card-heading"><div><h2>Signoff readiness</h2><p>Latest evidence for every required check and corner.</p></div><span class="pill" id="checks-pill">—</span></div><div id="checks-table"></div></div><div class="card"><div class="card-heading"><div><h2>Release contract</h2><p>Frozen inputs. Explicit accountability.</p></div></div><div class="contract" id="contract"></div></div></div>
+<div class="card blockers-card"><div class="card-heading"><div><h2 id="blocker-title">Release blockers</h2><p>Actionable reasons, not a single opaque red status.</p></div></div><div id="blockers"></div></div>
+</section>
+<section id="evidence" class="view hidden"><div class="toolbar"><input id="search" placeholder="Filter by check, corner, tool or run ID" aria-label="Filter evidence"><span class="muted">Select a run to inspect its captured evidence.</span></div><div id="evidence-list" class="card"></div><pre id="run-detail" class="detail hidden"></pre></section>
+<section id="dependencies" class="view hidden"><div class="card"><div class="card-heading"><div><h2>Dependency graph</h2><p>Content hashes, derivation pins and the inputs that make a result obsolete.</p></div></div><div id="resource-table"></div></div><div id="impact-detail" class="card hidden"></div></section>
+<section id="approvals" class="view hidden"><div class="two-column"><div class="card"><div class="card-heading"><h2>Reviewer signatures</h2></div><div id="approval-list"></div></div><div class="card"><div class="card-heading"><h2>Evidence-bound waivers</h2></div><div id="waiver-list"></div></div></div><div class="notice">This browser cannot approve, waive, mutate evidence, or access signing keys. Use the CLI with your external trust policy.</div></section>
+<section id="audit" class="view hidden"><div class="card"><div class="card-heading"><div><h2>Append-only audit history</h2><p>Preserve an external signed checkpoint to detect history rewriting or truncation.</p></div><span id="ledger-head" class="mono"></span></div><div id="audit-list"></div></div></section>
+<footer><span>OpenTapeout · Evidence is only as trustworthy as its capture boundary.</span><span id="last-updated">Not yet loaded</span></footer>
+</main></div>
+</body></html>
