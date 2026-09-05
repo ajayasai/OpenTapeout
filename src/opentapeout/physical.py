@@ -117,8 +117,9 @@ def _opensta(body: str, run_id: str) -> dict:
         ensure(all(finite_number(v) for v in path_values), "Nonfinite timing path slack")
         for (value, status) in slacks:
             ensure((float(value) >= 0) == (status == "MET"), "Timing slack sign disagrees with path status")
-        worst = float(_one(sections[f"{mode.upper()}_WORST"], rf"^worst slack\s+({NUMBER})\s*$", "worst slack"))
-        tns = float(_one(sections[f"{mode.upper()}_TNS"], rf"^tns\s+({NUMBER})\s*$", "total negative slack"))
+        native_mode = "max" if mode == "setup" else "min"
+        worst = float(_one(sections[f"{mode.upper()}_WORST"], rf"^worst slack\s+(?:{native_mode}\s+)?({NUMBER})\s*$", "worst slack"))
+        tns = float(_one(sections[f"{mode.upper()}_TNS"], rf"^tns\s+(?:{native_mode}\s+)?({NUMBER})\s*$", "total negative slack"))
         ensure(finite_number(worst) and finite_number(tns) and tns <= 0, "Invalid timing summary")
         ensure(abs(worst - min(path_values)) <= 1e-9, "Worst path and timing summary disagree")
         ensure((worst >= 0 and tns == 0) or (worst < 0 and tns <= worst + 1e-9), "WNS/TNS summaries contradict")

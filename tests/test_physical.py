@@ -122,3 +122,25 @@ def test_drc_unknown_rule_and_bad_json():
     for body in ["OT_DATA {}\nOT_DATA {}", "OT_DATA []", "OT_DATA {\"rules\":1,\"rules\":2}", "OT_DATA {}\nOT_OTHER"]:
         with pytest.raises(TapeoutError):
             parse(framed("klayout-drc", body), "klayout-drc", "run1")
+
+
+@pytest.mark.parametrize("setup,hold", [(7.6, 0.6), (-1.4, 0.6), (7.6, -0.1)])
+def test_opensta_explicit_summary_mode_labels(setup, hold):
+    data = sta(setup=setup, hold=hold)
+    for section, prefix, mode in [("SETUP_WORST", "worst slack", "max"),
+                                   ("HOLD_WORST", "worst slack", "min"),
+                                   ("SETUP_TNS", "tns", "max"),
+                                   ("HOLD_TNS", "tns", "min")]:
+        old = f"OT_SECTION {section}\n{prefix} ".encode()
+        data = data.replace(old, f"OT_SECTION {section}\n{prefix} {mode} ".encode())
+    result = parse(data, "opensta", "run1")
+    assert (result["status"] == "pass") == (setup >= 0 and hold >= 0)
+
+
+@pytest.mark.parametrize("section,prefix,wrong", [("SETUP_WORST","worst slack","min"),
+    ("HOLD_WORST","worst slack","max"), ("SETUP_TNS","tns","min"), ("HOLD_TNS","tns","max")])
+def test_opensta_wrong_summary_mode_rejected(section, prefix, wrong):
+    data = sta().replace(f"OT_SECTION {section}\n{prefix} ".encode(),
+                         f"OT_SECTION {section}\n{prefix} {wrong} ".encode())
+    with pytest.raises(TapeoutError):
+        parse(data, "opensta", "run1")

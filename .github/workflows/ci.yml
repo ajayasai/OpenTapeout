@@ -67,7 +67,12 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install .
       - name: Install actual physical verification engines
-        run: bash scripts/install_native_tools.sh
+        run: |
+          if ! bash scripts/install_native_tools.sh > "$RUNNER_TEMP/native-build.log" 2>&1; then
+            tail -n 100 "$RUNNER_TEMP/native-build.log"
+            exit 1
+          fi
+          tail -n 15 "$RUNNER_TEMP/native-build.log"
       - name: Execute positive controls, physical defects and missing-constraint regression
         run: python scripts/qualify_physical.py --output physical-qualification.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

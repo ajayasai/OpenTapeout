@@ -47,7 +47,7 @@ def qualify(root: Path) -> dict:
     subprocess.run([tools["klayout"], "-b", "-r", "make_layout.rb"], cwd=root, check=True, timeout=60)
     resources = {
         "layout": ("layout", "resistor.gds"), "schematic": ("netlist", "resistor.cir"),
-        "drc-deck": ("rule_deck", "drc.lydrc"), "lvs-deck": ("rule_deck", "lvs.lylvs"),
+        "drc-deck": ("rule_deck", "drc.drc"), "lvs-deck": ("rule_deck", "lvs.lvs"),
         "timing-netlist": ("netlist", "timing.v"), "sdc": ("constraints", "timing.sdc"),
         "lib-tt": ("library", "timing.lib"), "sta-script": ("config", "sta.tcl")}
     for name, (kind, path) in resources.items():
@@ -61,8 +61,8 @@ def qualify(root: Path) -> dict:
     engine.register("lib-ss", "library", path="timing-slow.lib")
     engine.register("sta-script-ss", "config", path="sta-slow.tcl")
     configurations = {
-        "drc": ("DRC", "physical", "klayout-drc", ["layout", "drc-deck"], "klayout", ["-b", "-r", "drc.lydrc"]),
-        "lvs": ("LVS", "physical", "klayout-lvs", ["layout", "schematic", "lvs-deck"], "klayout", ["-b", "-r", "lvs.lylvs"]),
+        "drc": ("DRC", "physical", "klayout-drc", ["layout", "drc-deck"], "klayout", ["-b", "-r", "drc.drc"]),
+        "lvs": ("LVS", "physical", "klayout-lvs", ["layout", "schematic", "lvs-deck"], "klayout", ["-b", "-r", "lvs.lvs"]),
         "sta-tt": ("STA", "tt", "opensta", ["timing-netlist", "sdc", "lib-tt", "sta-script"], "opensta", ["-exit", "sta.tcl"]),
         "sta-ss": ("STA", "ss", "opensta", ["timing-netlist", "sdc", "lib-ss", "sta-script-ss"], "opensta", ["-exit", "sta-slow.tcl"])}
     for name, (_, _, _, _, tool, args) in configurations.items():

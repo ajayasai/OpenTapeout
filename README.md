@@ -4,11 +4,16 @@
 
 [![Tests](https://github.com/ajayasai/OpenTapeout/actions/workflows/ci.yml/badge.svg)](https://github.com/ajayasai/OpenTapeout/actions/workflows/ci.yml)
 
-**v0.2.0 alpha — Apache-2.0.** Offline-first tapeout evidence, dependency-aware release gates, signed reviewer decisions, minimal delivery capsules and verifiable release history. Public source: [ajayasai/OpenTapeout](https://github.com/ajayasai/OpenTapeout).
+**v0.3.0 alpha — Apache-2.0.** An offline-first tapeout evidence and release ledger:
+content-addressed inputs, dependency-aware freshness, exact-input policies, signed
+reviewer decisions, controlled deliveries and verifiable release history.
 
-This is release-evidence software, not a DRC/LVS/STA implementation or a certified signoff system. Real foundry qualification and commercial head-to-head evaluation remain outstanding. Synthetic examples are labeled; the separate Yosys CI job executes an actual combinational proof and counterexample, not a fabricated passing report.
+This is evidence software, not a replacement for DRC/LVS/STA engines or a certified
+signoff system. Commercial head-to-head evaluation and production foundry
+qualification remain outstanding. Native tool tests use original educational
+microflows; they are not a complete industrial chip release.
 
-## Start the dashboard
+## Run the dashboard
 
 With Python 3.11+ and Git:
 
@@ -20,87 +25,127 @@ opentapeout demo /tmp/opentapeout-demo --stale
 opentapeout --root /tmp/opentapeout-demo serve
 ```
 
-Open `http://127.0.0.1:8080`. Omit `--stale` for a fresh, passing synthetic example. Demo keys are generated locally and must never be reused in production. The browser is read-only: signing keys remain outside it.
+Open `http://127.0.0.1:8080`. Omit `--stale` for a passing synthetic example. Demo
+keys are generated locally; never use them in production. The dashboard is read-only:
+private signing keys stay outside the browser. `plan RC-001 --changed rtl` explains
+hypothetical rebuilds without executing tools or authorizing release.
 
-## What's new in v0.2.0
+## What changed in v0.3
 
-| Capability | Behavior |
+| Capability | Implemented behavior |
 |---|---|
-| Change planning | Read-only, hypothetical or observed ECO analysis; topological rebuild waves; reuse, rerun, wait and repair recommendations. Corrupt reports are never advertised as reusable. |
-| Candidate comparison | Immutable resource changes, check transitions and numerical metric deltas; no unsupported assumption that a larger number is better. |
-| Minimal disclosure | Exact file-and-SHA-256 allowlist, recipient binding, byte budget and portable aliases. Capsules contain only selected delivery bytes and small signed metadata, not private reports, RTL, PDKs or release notes. |
-| Recipient acknowledgment | The designated recipient verifies a capsule and signs its exact archive/manifest hashes. Wrong-recipient and changed-byte receipts are rejected. No network upload or independent foundry attestation is implied. |
-| Approval revocation | An individual reviewer can revoke their own exact approval; an explicitly authorized `release-admin` can revoke another reviewer's approval. Other signatures and original history remain intact. |
-| Release withdrawal | Signed, irreversible withdrawal of a sealed release. The live gate blocks it; historical archives are preserved. |
-| Offline status | Short-lived signed revocation/withdrawal snapshots, project scope, expiry and caller-retained minimum-sequence anti-replay checks. |
-| Native proof capture | Conservative `yosys-sat` adapter for explicit `sat -prove SIGNAL VALUE` transcripts. Missing constraints, incomplete/mixed output and errors cannot establish success. |
-| Faster evidence selection | Indexed latest-run selection replaces repeated scans, preserving the no-fallback rule. Measured separately from ledger replay and file hashing. |
+| Exact-input policy | Requires particular resource IDs and SHA-256 pins, allowed tool IDs, exact corner definitions and report formats, beyond merely requiring some resource of the right kind. |
+| Executable identity | A registered launcher SHA-256 is checked before execution and afterward; mismatches block. The observed identity is preserved in evidence and checked by policy. |
+| Reviewed policy locks | `pin-policy` produces a separate v2 review draft from fresh managed runs. It never overwrites active policy, changes the ledger or approves a release. |
+| Native stdout capture | Captures tool stdout directly by hash; physical adapters are bound to their check kinds. Native diagnostics or nonempty stderr cannot silently become success. |
+| Physical collectors | Narrow KLayout DRC/LVS and OpenSTA setup/hold protocols with explicit completion, named rules, nonempty geometry/netlists/paths, finite metrics and consistency checks. |
+| Native qualification | Separate CI microflows exercise actual geometry checks, extracted-netlist comparison, two timing libraries, stale input detection, deliberate defects and signed offline archive verification. |
 
-See [upgrade guide and commands](docs/UPGRADE_V0_2.md) and [validation](docs/VALIDATION.md).
+Read [exact policy migration and trust boundaries](docs/POLICY_V2.md),
+[physical collectors and qualification scope](docs/PHYSICAL_QUALIFICATION.md), and
+[observed validation](docs/VALIDATION.md). A configured workflow is not by itself a
+passed qualification. The v1 policy and existing workflows remain supported.
 
-## Core evidence controls
+## Core release controls
 
-The existing content-addressed ledger still captures Git commits and recursive submodule pins, hashed PDK files or directory trees, IP revisions, tool versions and argv, corner definitions, reports, stdout/stderr, waivers, approvals, GDS/OASIS delivery hashes and release notes. Direct or transitive input changes invalidate affected evidence. A new report cannot bless a netlist derived from obsolete RTL. Unregistered on-disk changes are detected too.
+The ledger captures Git commits and recursive submodule pins, IP revisions, PDK
+files or directory trees, tool versions/arguments, corner definitions, reports,
+stdout/stderr, waivers, approvals, release notes and GDS/OASIS delivery hashes.
+Direct or transitive input changes invalidate affected evidence. A new LVS report
+cannot bless a netlist built against obsolete RTL. Unregistered file edits are
+also detected.
 
-Release policies require check/corner coverage, input kinds, finite metric thresholds, evidence age, managed execution, clean Git provenance, hashed PDKs and distinct authorized reviewers. Unknown/incomplete runs, nonzero exits and the latest failing run cannot silently fall back to an older pass. Waivers remain exact-evidence, exact-violation, expiring, signed and revocable.
+Policies enforce required check/corner coverage, metrics and units, evidence age,
+managed execution, provenance and separate authorized reviewers. The latest
+failing or unfinished run cannot fall back to an older pass. Waivers cover exact
+evidence and violations, with rationale, expiry and signatures. Reviewers can revoke
+their own approval; a separate administrative role is required to revoke another's.
+Sealed releases can be irreversibly withdrawn without deleting historical evidence.
 
-Full evidence archives have signed manifests, deterministic ZIP member metadata, streaming artifact hashes and an independent offline verifier supplied with external policy and trust keys. The SQLite event chain and externally retained signed checkpoints make history inspection possible; they do not defeat a hostile administrator who also controls every external trust anchor.
+The dashboard provides evidence drill-down, dependency impact, candidate comparison,
+rebuild planning, delivery status and audit inspection. Plans are advisory and depend
+on accurate declared dependencies. Reusable evidence does not automatically preserve
+approval of a changed candidate.
 
-## Plan an ECO without changing anything
+## Exact configuration before release
+
+Register reviewed tool metadata with `executable_sha256`, actual inputs, collector
+scripts and corners; capture managed runs, then create a separate policy draft:
 
 ```bash
-opentapeout --root /tmp/opentapeout-demo plan RC-001 --changed rtl
-opentapeout --root /tmp/opentapeout-demo plan RC-001
-# On a workspace containing two immutable candidates:
-opentapeout --root ./workspace compare RC-001 RC-002
+opentapeout --root ./workspace pin-policy --output ./policy.review.json
+# Independently review the pins, rule coverage, metric units and runtime.
+# Use the reviewed policy explicitly to create and approve a NEW candidate.
 ```
 
-Plans are advisory. They do not execute tools, alter inputs, waive violations, renew approvals or authorize release. All results depend on the correctness of the declared dependency graph. Changes may allow reuse of unaffected evidence while still requiring a new candidate and new signatures.
+Never regenerate the authorization policy automatically just to match a changed
+design. Executable hashing is not hermetic execution, sandboxing, dependency
+discovery or protection against a hostile administrator. Shared libraries, plugins,
+startup scripts, child tools and environment settings need separate control.
 
-## Separate private evidence from recipient deliveries
+## Separate private evidence from delivery bytes
 
 ```bash
 opentapeout --root ./workspace seal RC-001 /secure/full-evidence.zip --key /secure/release.pem
 opentapeout --root ./workspace disclosure RC-001 --recipient foundry-review --output disclosure.json
-# Review the generated allowlist, hashes, aliases, recipient and disclosure obligations.
+# Review the recipient, exact file allowlist, hashes and disclosure obligations.
 opentapeout --root ./workspace deliver RC-001 DELIVERY-001 ./delivery.zip \
   --disclosure disclosure.json --key /secure/release.pem
 opentapeout --trust /secure/trust.json verify-delivery ./delivery.zip --disclosure disclosure.json
 ```
 
-**Full evidence is confidential by default:** it can contain proprietary RTL, IP, PDK material and logs. Keep full archives out of public source repositories. A minimal capsule intentionally withholds that evidence: its verifier establishes approved bytes and sender authorization, **not independent physical signoff or foundry acceptance**. Neither package proves that its bytes are valid manufacturing geometry. Disclosure allowlists do not replace NDA/export/license review.
+Full evidence archives can contain confidential RTL, IP, PDK material and logs.
+Keep them out of public repositories. Minimal capsules contain only explicitly
+allowlisted delivery files and small signed metadata, with recipient binding and a
+byte budget. The designated recipient can sign the exact archive and manifest
+hashes. This is a byte acknowledgment, **not independent foundry acceptance**.
+Minimal verification cannot recheck evidence that was deliberately withheld.
 
-## Historical verification versus current status
+Full archives can be verified offline using independently supplied policy and keys.
+Short-lived signed status snapshots add revocation/withdrawal checking; the caller
+must retain a sequence high-water mark independently to reject older snapshots.
+Verification without current status is historical verification at sealing time.
+See [v0.2 lifecycle commands](docs/UPGRADE_V0_2.md) for the retained delivery workflow.
 
-```bash
-opentapeout --root ./workspace release-status --key /secure/release.pem --output status.json
-opentapeout --policy /secure/policy.json --trust /secure/trust.json verify /secure/full-evidence.zip \
-  --status status.json --min-status-seq "$LAST_VERIFIED_SEQUENCE"
-```
-
-Retain the last verified sequence in an independent location. A signed status snapshot expires within 24 hours (one hour by default); it cannot reveal events that happened after it was issued. Verification without `--status` remains historical verification at sealing time, not a statement about present release authorization.
-
-## Test and qualify
+## Test and reproduce native checks
 
 ```bash
 python -m pip install '.[web,dev]'
 pytest --cov=opentapeout --cov-report=term-missing
 python -m build
-python scripts/benchmark_selection.py
-# Requires an actual Yosys installation; absence is an error, not a skipped pass.
+# Requires actual tools; missing executables are errors, not skipped passes.
 python scripts/qualify_yosys.py --output yosys-qualification.json
+python scripts/qualify_physical.py --output physical-qualification.json
 ```
 
-The v0.2.0 local suite has 300 passing tests and 94.79% Python statement coverage. The reproducible 20,000-run/100-check selection microbenchmark measured 0.2995 s before versus 0.003685 s after (median of five runs, approximately 81.3x). **That is not an end-to-end speedup or a vendor comparison.** See [recorded scope and evidence](docs/VALIDATION.md).
+The local v0.3 suite has 402 passing tests and 95.15% Python statement coverage.
+The separate native CI jobs test real tools, not only hand-authored parser fixtures.
+See [validation records](docs/VALIDATION.md) for exact versions, results and limits.
+The earlier 81.3x measurement concerned only latest-run selection versus our own
+old scan algorithm; it was not end-to-end performance or a vendor comparison.
 
-## Scope and next qualification steps
+## Where the evidence stops
 
-This release does not establish superiority over every commercial product. Perforce IPLM, Keysight SOS and Siemens semiconductor lifecycle products have documented enterprise capabilities outside this application's scope. See [source-backed competitive scope](docs/COMPETITIVE_SCOPE.md) and [roadmap](docs/ROADMAP.md).
+No claim of superiority over every commercial product is established. Perforce
+IPLM, Keysight SOS and Siemens lifecycle offerings have documented enterprise
+capabilities beyond this application's tested scope. [Competitive scope](docs/COMPETITIVE_SCOPE.md)
+distinguishes advertised vendor capabilities, tested OpenTapeout behavior and unknowns.
 
-Still outstanding: sanctioned native DRC/LVS/STA adapters and PDK coverage, actual tapeout qualification, enterprise SSO and multi-tenant write authorization, distributed object storage, million-event replay benchmarks, independent security review, HSM signing and real foundry API receipts. Dependency ranges are not a hermetic environment lock. The managed runner is not a sandbox or remotely authenticated execution service.
+Outstanding work includes full-chip/PDK and proprietary-tool qualification, complete
+signoff modes and corners, enterprise SSO and permission-scoped multi-user writes,
+distributed storage and million-event replay, hardware-backed signing, independent
+security review and real foundry-service integration. Dependency ranges are not an
+environment lock. The managed runner is not a sandbox. A hash and signature do not
+prove correct manufacturing geometry or truthful tool execution.
 
-## Documentation and contribution
+## Documentation and license
 
-[Quickstart](docs/QUICKSTART.md) · [v0.2 commands](docs/UPGRADE_V0_2.md) · [Adapters](docs/ADAPTERS.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Contributing](CONTRIBUTING.md)
+[Quickstart](docs/QUICKSTART.md) · [Exact policy](docs/POLICY_V2.md) ·
+[Physical collectors](docs/PHYSICAL_QUALIFICATION.md) · [Existing adapters](docs/ADAPTERS.md) ·
+[Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [Roadmap](docs/ROADMAP.md)
 
-Generate a self-contained synthetic dashboard snapshot with `python scripts/build_demo_preview.py`; browser checks are in `scripts/check_demo_browser.py`. Generated snapshots and screenshots are not committed. No proprietary EDA code, licensed PDK, production design or private signing key is shipped. Apache-2.0; copyright 2026 OpenTapeout contributors.
+Generate a self-contained synthetic review with `python scripts/build_demo_preview.py`;
+check it with `python scripts/check_demo_browser.py`. Generated previews, real design
+workspaces and private keys are not committed. No licensed PDK or production design
+is shipped. External tools retain their own licenses. OpenTapeout source and original
+examples: Apache-2.0, copyright 2026 OpenTapeout contributors. See [CONTRIBUTING.md](CONTRIBUTING.md).

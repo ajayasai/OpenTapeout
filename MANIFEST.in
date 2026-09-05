@@ -4,6 +4,6 @@ recursive-include src/opentapeout *.py py.typed *.html *.css *.js
 recursive-include tests *.py
 recursive-include scripts *.py *.sh
 recursive-include docs *.md *.json *.html *.png *.xml *.log
-recursive-include examples *.json *.rb *.lydrc *.lylvs *.cir *.v *.sdc *.tcl *.lib *.md
+recursive-include examples *.json *.rb *.drc *.lvs *.cir *.v *.sdc *.tcl *.lib *.md
 recursive-include .github *.yml *.md
 global-exclude *.pyc
