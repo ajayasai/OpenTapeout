@@ -3,7 +3,7 @@
 set -euo pipefail
 : "${RUNNER_TEMP:?Run on a disposable CI runner with RUNNER_TEMP set}"
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends klayout build-essential cmake ninja-build tcl-dev swig bison flex libeigen3-dev libfmt-dev zlib1g-dev
+sudo apt-get install -y --no-install-recommends klayout build-essential cmake ninja-build tcl-dev swig bison flex libeigen3-dev libfmt-dev zlib1g-dev autoconf automake libtool
 prefix="$RUNNER_TEMP/opentapeout-native"
 mkdir -p "$prefix/src"
 fetch_pin() {
@@ -17,6 +17,7 @@ fetch_pin() {
 fetch_pin https://github.com/cuddorg/cudd.git f54f533303640afd5dbe47a05ebeabb3066f2a25 "$prefix/src/cudd"
 (
   cd "$prefix/src/cudd"
+  autoreconf -fi
   ./configure --prefix="$prefix/cudd" --enable-silent-rules
   make -j2
   make install
