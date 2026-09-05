@@ -1,0 +1,41 @@
+name: OpenTapeout release gate
+description: Verify tapeout evidence freshness, integrity and candidate approvals against external protected policy and trust.
+author: OpenTapeout contributors
+branding:
+  icon: check-circle
+  color: blue
+inputs:
+  workspace:
+    description: Existing private OpenTapeout workspace on this trusted runner.
+    required: true
+  candidate:
+    description: Immutable candidate name to evaluate.
+    required: true
+  policy:
+    description: Trusted policy JSON outside untrusted pull-request control.
+    required: true
+  trust:
+    description: Trusted public-key mapping outside untrusted pull-request control.
+    required: true
+outputs:
+  ready:
+    description: Whether the candidate satisfied all configured gates.
+    value: ${{ steps.gate.outputs.ready }}
+  candidate_sha256:
+    description: Exact candidate digest evaluated by the gate.
+    value: ${{ steps.gate.outputs.candidate_sha256 }}
+runs:
+  using: composite
+  steps:
+    - name: Install OpenTapeout
+      shell: bash
+      run: python -m pip install "$GITHUB_ACTION_PATH"
+    - name: Evaluate release gate
+      id: gate
+      shell: bash
+      env:
+        OT_WORKSPACE: ${{ inputs.workspace }}
+        OT_CANDIDATE: ${{ inputs.candidate }}
+        OT_POLICY: ${{ inputs.policy }}
+        OT_TRUST: ${{ inputs.trust }}
+      run: python "$GITHUB_ACTION_PATH/scripts/ci_gate.py"
