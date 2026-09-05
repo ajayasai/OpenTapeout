@@ -3,7 +3,7 @@
 set -euo pipefail
 : "${RUNNER_TEMP:?Run on a disposable CI runner with RUNNER_TEMP set}"
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends klayout build-essential cmake ninja-build tcl-dev swig bison flex libeigen3-dev libfmt-dev zlib1g-dev autoconf automake libtool
+sudo apt-get install -y --no-install-recommends klayout build-essential cmake ninja-build tcl-dev swig bison flex libfl-dev libeigen3-dev libfmt-dev zlib1g-dev autoconf automake libtool
 prefix="$RUNNER_TEMP/opentapeout-native"
 mkdir -p "$prefix/src"
 fetch_pin() {

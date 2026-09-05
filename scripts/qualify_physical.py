@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import copy
 import json
 import os
 import shutil
@@ -17,6 +18,7 @@ from pathlib import Path
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
+from opentapeout.bundle import seal, verify_bundle
 from opentapeout.engine import Engine
 from opentapeout.pinning import pin_policy
 from opentapeout.policy import default_policy
@@ -84,7 +86,7 @@ def qualify(root: Path) -> dict:
     ensure(all(r["exit_code"] == 0 and r["result"]["status"] == "pass" for r in passing.values()),
            "A native positive control failed; inspect transcripts, do not weaken the gate")
     keys, entries = {}, {}
-    for principal, role in [("physical-reviewer", "physical"), ("timing-reviewer", "verification")]:
+    for principal, role in [("physical-reviewer", "physical"), ("timing-reviewer", "verification"), ("release-officer", "release")]:
         key = Ed25519PrivateKey.generate()
         public = base64.b64encode(key.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)).decode()
         keys[role] = key
@@ -103,9 +105,25 @@ def qualify(root: Path) -> dict:
                                          "metrics": metrics, "max_age_hours": 1})
     policy = pin_policy(engine, policy)
     engine.candidate("RC-PHYSICAL", "Cell-scale positive controls, not a tapeout", {"educational.gds": "layout"}, policy, trust, "author")
-    for role, key in keys.items():
-        engine.approve("RC-PHYSICAL", role, key, policy, trust)
+    for role in policy["approval_roles"]:
+        engine.approve("RC-PHYSICAL", role, keys[role], policy, trust)
     ensure(engine.gate("RC-PHYSICAL", policy, trust)["ready"], "Reviewed exact-pin positive candidate failed")
+    archive = root.parent / "physical-evidence.zip"
+    sealed = seal(engine, "RC-PHYSICAL", archive, keys["release"], policy, trust)
+    ensure(verify_bundle(archive, policy, trust)["verified"], "Native evidence failed offline verification")
+    negative_gates = {}
+    def blocked(name, case):
+        kind, corner, _, _, _, _ = configurations[name]
+        focused = copy.deepcopy(policy)
+        focused["required_checks"] = [c for c in focused["required_checks"] if (c["kind"],c["corner"]) == (kind,corner)]
+        # Refresh pins solely to ensure a defect is blocked by its evidence, not old hashes or missing approvals.
+        focused = pin_policy(engine, focused)
+        engine.candidate(case, "Deliberate negative control; never release", {"educational.gds":"layout"}, focused, trust, "author")
+        gate = engine.gate(case, focused, trust, include_approvals=False)
+        codes = {b["code"] for b in gate["blockers"]}
+        ensure(not gate["ready"] and codes & {"UNWAIVED_VIOLATION", "METRIC_THRESHOLD", "RESULT_UNKNOWN"}, "Defective evidence did not block the gate")
+        ensure(not codes & {"RESULT_STALE", "INPUT_PIN_MISMATCH", "CANDIDATE_CHANGED", "APPROVALS_MISSING"}, "Negative control confounded by stale pins or reviews")
+        negative_gates[case] = sorted(codes)
     subprocess.run([tools["klayout"], "-b", "-rd", "defect=width", "-r", "make_layout.rb"], cwd=root, check=True, timeout=60)
     drift = engine.gate("RC-PHYSICAL", policy, trust)
     ensure(any(b["code"] == "WORKSPACE_DRIFT" for b in drift["blockers"]), "Unregistered layout drift not detected")
@@ -115,6 +133,7 @@ def qualify(root: Path) -> dict:
     bad_drc = run("drc")
     ensure(bad_drc["result"]["status"] == "fail" and bad_drc["result"]["metrics"]["rule:WIDTH:violations"] > 0,
            "Actual width violation not detected")
+    blocked("drc", "BAD-WIDTH")
     # Restore geometry, then deliberately mismatch the electrical reference.
     subprocess.run([tools["klayout"], "-b", "-r", "make_layout.rb"], cwd=root, check=True, timeout=60)
     engine.register("layout", "layout", path="resistor.gds")
@@ -122,17 +141,21 @@ def qualify(root: Path) -> dict:
     engine.register("schematic", "netlist", path="resistor.cir")
     bad_lvs = run("lvs")
     ensure(bad_lvs["result"]["status"] == "fail", "Actual resistor mismatch not detected")
+    blocked("lvs", "BAD-LVS")
     original_sdc = (root/"timing.sdc").read_text()
     (root/"timing.sdc").write_text(original_sdc.replace("-period 10", "-period 1"))
     engine.register("sdc", "constraints", path="timing.sdc")
     bad_sta = run("sta-tt")
     ensure(bad_sta["result"]["status"] == "fail" and bad_sta["result"]["metrics"]["setup_worst_slack_ns"] < 0,
            "Actual negative setup slack not detected")
+    blocked("sta-tt", "BAD-STA")
     (root/"timing.sdc").write_text("\n".join(line for line in original_sdc.splitlines() if not line.startswith("set_output_delay")))
     engine.register("sdc", "constraints", path="timing.sdc")
     uncovered = run("sta-tt")
     ensure(uncovered["result"]["status"] != "pass", "Missing endpoint constraints must not pass")
-    return {"qualified": True, "scope": "educational cell-scale native DRC/LVS and two timing libraries; NOT foundry or full-chip signoff",
+    blocked("sta-tt", "BAD-CONSTRAINTS")
+    return {"offline_archive_verified": True, "archive_sha256": sealed["archive_sha256"], "negative_gate_codes": negative_gates,
+            "qualified": True, "scope": "educational cell-scale native DRC/LVS and two timing libraries; NOT foundry or full-chip signoff",
             "versions": versions, "positive_metrics": {name: r["result"]["metrics"] for name,r in passing.items()},
             "exact_pin_gate_passed": True, "layout_drift_blocked": True, "layout_eco_stale": True,
             "width_defect_blocked": True, "schematic_mismatch_blocked": True, "negative_setup_slack_blocked": True,

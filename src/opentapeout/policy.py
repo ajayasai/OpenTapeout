@@ -10,7 +10,7 @@ from .util import HEX, TapeoutError, digest, ensure, finite_number, identifier, 
 
 
 def validate_policy(policy: dict) -> dict:
-    ensure(isinstance(policy, dict) and policy.get("schema") in {"opentapeout.policy/v1", "opentapeout.policy/v2"}, "Invalid policy schema")
+    ensure(isinstance(policy, dict) and isinstance(policy.get("schema"), str) and policy.get("schema") in {"opentapeout.policy/v1", "opentapeout.policy/v2"}, "Invalid policy schema")
     strict = policy["schema"] == "opentapeout.policy/v2"
     allowed = {"schema", "required_checks", "approval_roles", "distinct_approvers", "forbid_self_approval",
                "max_approval_age_hours", "require_managed_runs", "require_delivery", "require_git",
@@ -24,6 +24,8 @@ def validate_policy(policy: dict) -> dict:
         if strict:
             fields |= {"input_pins", "allowed_tools", "report_formats", "require_pinned_executable"}
         ensure(isinstance(check, dict) and set(check) == fields, "Malformed check policy")
+        identifier(check["corner"])
+        ensure(isinstance(check["kind"], str) and check["kind"] in CHECKS, "Unsupported check kind")
         if strict:
             pins = check["input_pins"]
             ensure(isinstance(pins, dict) and bool(pins), "Exact input pins are required by policy v2")
@@ -46,7 +48,7 @@ def validate_policy(policy: dict) -> dict:
         ensure(key not in seen, "Duplicate kind/corner requirement")
         seen.add(key)
         kinds = check["required_resource_kinds"]
-        ensure(isinstance(kinds, list) and bool(kinds) and all(k in KINDS for k in kinds),
+        ensure(isinstance(kinds, list) and bool(kinds) and all(isinstance(k, str) and k in KINDS for k in kinds),
                "Invalid required resource kinds")
         ensure(finite_number(check["max_age_hours"]) and 0 < check["max_age_hours"] <= 876000,
                "Check maximum age must be positive and at most 100 years")
@@ -179,6 +181,11 @@ def evaluate(candidate: dict, policy: dict, trust: Trust, approvals: list[dict],
                     block("EXACT_INPUT_MISSING", f"Run does not bind required resource: {resource_id}", scope)
                 elif resource["sha256"] != expected_hash:
                     block("INPUT_PIN_MISMATCH", f"Resource does not match policy checksum: {resource_id}", scope)
+                if resource is not None and resource_id in {run["tool"], run["corner"]}:
+                    if resource["path"] is not None or resource["sha256"] != digest(resource["metadata"]):
+                        block("DEFINITION_PIN_INVALID", "Tool/corner pins must bind canonical metadata-only definitions", scope)
+            if run["tool_spec"] != graph.resources.get(run["tool"], {}).get("metadata"):
+                block("TOOL_SPEC_MISMATCH", "Captured tool options differ from the pinned tool definition", scope)
             if run["tool"] not in requirement["allowed_tools"]:
                 block("TOOL_NOT_ALLOWED", "Run used a tool outside the policy allowlist", scope)
             if run.get("completed_at") and run.get("format") not in requirement["report_formats"]:

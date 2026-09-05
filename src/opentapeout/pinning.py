@@ -10,7 +10,7 @@ import copy
 from .engine import Engine
 from .graph import Graph
 from .policy import check_key, validate_policy
-from .util import HEX, ensure
+from .util import HEX, digest, ensure
 
 
 def pin_policy(engine: Engine, policy: dict) -> dict:
@@ -31,6 +31,11 @@ def pin_policy(engine: Engine, policy: dict) -> dict:
         current = graph.closure(run["roots"])
         graph.assert_fresh(engine.root, current)
         ensure(current == run["snapshot"] and not run.get("input_drift"), "Cannot pin stale evidence")
+        for resource_id in (run["tool"], run["corner"]):
+            resource = graph.resources[resource_id]
+            ensure(resource["path"] is None and resource["sha256"] == digest(resource["metadata"]),
+                   "Pinning requires metadata-only tool/corner definitions; capture executable bytes separately")
+        ensure(run["tool_spec"] == graph.resources[run["tool"]]["metadata"], "Captured tool specification mismatch")
         pin = run["tool_spec"].get("executable_sha256")
         ensure(isinstance(pin, str) and HEX.fullmatch(pin) is not None, "Register an executable SHA-256 pin before execution")
         identity = run.get("execution_identity") or {}
