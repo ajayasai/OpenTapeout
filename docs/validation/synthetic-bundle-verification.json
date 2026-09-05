@@ -1,0 +1,60 @@
+{
+  "candidate_sha256": "c933883e857bf6f3e763458f772e2021ea37ff74d9a4b1327da4f47d4f563e0b",
+  "files": 20,
+  "gate": {
+    "approval_assignment": {
+      "physical": "physical-reviewer",
+      "verification": "verification-reviewer"
+    },
+    "blockers": [],
+    "candidate_sha256": "c933883e857bf6f3e763458f772e2021ea37ff74d9a4b1327da4f47d4f563e0b",
+    "checks": [
+      {
+        "check": "DRC:nominal",
+        "run_id": "3648beaf-96ec-49b8-a338-9d8a8bade92c",
+        "status": "pass",
+        "violations": 0
+      },
+      {
+        "check": "LVS:nominal",
+        "run_id": "a05effdb-3df9-4e41-a433-a09537468a43",
+        "status": "pass",
+        "violations": 0
+      },
+      {
+        "check": "STA:nominal",
+        "run_id": "8d229588-6f02-4e7c-925a-17790210297c",
+        "status": "pass",
+        "violations": 0
+      },
+      {
+        "check": "CDC:nominal",
+        "run_id": "14796e5e-65ee-4519-afcc-a2529c629e8d",
+        "status": "pass",
+        "violations": 0
+      },
+      {
+        "check": "POWER:nominal",
+        "run_id": "61d835a2-91ce-48f4-81ad-da4a45a3d4f7",
+        "status": "pass",
+        "violations": 0
+      },
+      {
+        "check": "FORMAL:nominal",
+        "run_id": "13664d1f-b673-4d92-a4b6-237afd0d9d8c",
+        "status": "pass",
+        "violations": 0
+      }
+    ],
+    "evaluated_at": "2026-09-05T07:54:10.776004Z",
+    "ready": true,
+    "rejected_approvals": [],
+    "rejected_waivers": [],
+    "valid_waivers": 0
+  },
+  "manifest_sha256": "4aad1365aac18a073c07a305089480aeae60cf6826bcc685a7de06c367892582",
+  "objects": 19,
+  "signer": "release-engineer",
+  "verification_scope": "historical signed evidence, not current design or foundry acceptance",
+  "verified": true
+}
