@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import os
 import signal
+import shutil
 import subprocess
 import uuid
 from pathlib import Path
@@ -16,7 +17,7 @@ from .policy import check_key, evaluate, evidence_digest, validate_policy
 from .signing import Trust, sign
 from .store import Store, Transaction
 from .util import (TapeoutError, canonical, digest, ensure, identifier, now, safe_relative,
-                   timestamp, workspace_file, finite_number)
+                   timestamp, workspace_file, finite_number, file_digest)
 
 
 def state_from(events: list[dict]) -> dict:
@@ -172,7 +173,8 @@ class Engine:
 
     def finish(self, run_id: str, report: str | None, *, exit_code: int, format_name: str = "json",
                actor: str = "operator", _managed: bool = False,
-               _logs: tuple[Path, Path] | None = None) -> dict:
+               _logs: tuple[Path, Path] | None = None,
+               _execution_identity: dict | None = None) -> dict:
         ensure(type(exit_code) is int and -65536 <= exit_code <= 65536, "Invalid exit code")
         with self.store.transaction(write=True) as tx:
             state = state_from(tx.events)
@@ -189,9 +191,15 @@ class Engine:
                 with self.store.verify_object(report_hash).open("rb") as handle:
                     raw = handle.read(MAX_REPORT + 1)
                 try:
-                    ensure(format_name != "yosys-sat" or run["kind"] == "FORMAL",
-                           "Yosys SAT evidence can only satisfy a FORMAL check")
+                    from .parsers import FORMAT_KINDS
+                    ensure(format_name not in FORMAT_KINDS or run["kind"] == FORMAT_KINDS[format_name],
+                           f"{format_name} evidence can only satisfy a {FORMAT_KINDS.get(format_name)} check")
                     result = parse(raw, format_name, run_id)
+                    if format_name in {"klayout-drc", "klayout-lvs", "opensta"} and _logs and _logs[1].stat().st_size:
+                        # Native diagnostics often go to stderr even when a process returns zero.
+                        result = {"schema": SCHEMA, "run_id": run_id, "status": "unknown", "complete": False,
+                                  "metrics": {}, "violations": []}
+                        parser_error = "Native physical collector wrote stderr; review diagnostics before accepting evidence"
                 except TapeoutError as exc:
                     parser_error = str(exc)
             else:
@@ -206,6 +214,8 @@ class Engine:
                 "format": format_name, "parser_error": parser_error, "result": result,
                 "input_drift": sorted(set(changed) | set(drift)),
                 "stdout_sha256": None, "stderr_sha256": None}
+            if _execution_identity is not None:
+                completion["execution_identity"] = _execution_identity
             if _logs:
                 for name, log in zip(("stdout_sha256", "stderr_sha256"), _logs):
                     completion[name], _ = self.store.put_file(log)
@@ -213,9 +223,11 @@ class Engine:
             return {**run, **completion}
 
     def run(self, kind: str, inputs: list[str], tool: str, corner: str, report: str, *,
-            format_name: str = "json", timeout: float = 3600, actor: str = "operator") -> dict:
+            format_name: str = "json", timeout: float = 3600, actor: str = "operator",
+            report_source: str = "file") -> dict:
         """Execute the explicitly registered argv, without a shell. This is not a sandbox."""
         safe_relative(report)
+        ensure(report_source in {"file", "stdout"}, "Report source must be file or stdout")
         ensure(not (self.root / report).exists(), "Output report already exists; refusing stale-report reuse")
         ensure(finite_number(timeout) and 0 < timeout <= 31536000, "Timeout must be finite, positive and at most one year")
         run_id = self.begin(kind, inputs, tool, corner, actor)
@@ -224,9 +236,22 @@ class Engine:
         logs.mkdir(exist_ok=True)
         out, err = logs / f"{run_id}.out", logs / f"{run_id}.err"
         env = {**os.environ, "OPENTAPEOUT_RUN_ID": run_id, "OPENTAPEOUT_REPORT": report}
+        identity = None
+        argv = list(tool_spec["argv"])
         with out.open("xb") as stdout, err.open("xb") as stderr:
             try:
-                process = subprocess.Popen(tool_spec["argv"], cwd=self.root, env=env, stdout=stdout,
+                if "executable_sha256" in tool_spec:
+                    # Resolve exactly once. This pins the launcher, not dynamic libraries or child tools.
+                    command = argv[0]
+                    resolved = (str((self.root / command).resolve()) if "/" in command
+                                else shutil.which(command, path=env.get("PATH")))
+                    ensure(resolved is not None, "Pinned executable could not be resolved")
+                    executable = Path(resolved).resolve(strict=True)
+                    checksum, size = file_digest(executable)
+                    identity = {"path": str(executable), "sha256": checksum, "size": size, "unchanged": False}
+                    ensure(checksum == tool_spec["executable_sha256"], "Executable SHA-256 does not match registered pin")
+                    argv[0] = str(executable)
+                process = subprocess.Popen(argv, cwd=self.root, env=env, stdout=stdout,
                                            stderr=stderr, start_new_session=(os.name == "posix"))
                 try:
                     code = process.wait(timeout=timeout)
@@ -237,12 +262,23 @@ class Engine:
                         process.kill()
                     process.wait()
                     code = 124
-            except OSError as exc:
+            except (OSError, TapeoutError) as exc:
                 stderr.write(f"Execution failed: {exc}\n".encode())
                 code = 127
+            if identity is not None:
+                try:
+                    identity["unchanged"] = file_digest(Path(identity["path"])) == (identity["sha256"], identity["size"])
+                except TapeoutError:
+                    identity["unchanged"] = False
+                if not identity["unchanged"]:
+                    stderr.write(b"Executable changed or disappeared during execution.\n")
+                    code = 126
+        if report_source == "stdout":
+            # Captured stdout is already a workspace-contained regular file. Never read an arbitrary tool path.
+            report = out.relative_to(self.root).as_posix()
         return self.finish(run_id, report if (self.root / report).is_file() else None,
                            exit_code=code, format_name=format_name, actor=actor, _managed=True,
-                           _logs=(out, err))
+                           _logs=(out, err), _execution_identity=identity)
 
     def attach(self, relative: str) -> str:
         checksum, _ = self.store.put_file(workspace_file(self.root, relative))

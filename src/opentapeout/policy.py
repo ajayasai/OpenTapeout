@@ -6,11 +6,12 @@ from datetime import timedelta
 from .graph import Graph, KINDS
 from .parsers import CHECKS
 from .signing import Trust
-from .util import TapeoutError, digest, ensure, finite_number, identifier, timestamp
+from .util import HEX, TapeoutError, digest, ensure, finite_number, identifier, timestamp
 
 
 def validate_policy(policy: dict) -> dict:
-    ensure(isinstance(policy, dict) and policy.get("schema") == "opentapeout.policy/v1", "Invalid policy schema")
+    ensure(isinstance(policy, dict) and policy.get("schema") in {"opentapeout.policy/v1", "opentapeout.policy/v2"}, "Invalid policy schema")
+    strict = policy["schema"] == "opentapeout.policy/v2"
     allowed = {"schema", "required_checks", "approval_roles", "distinct_approvers", "forbid_self_approval",
                "max_approval_age_hours", "require_managed_runs", "require_delivery", "require_git",
                "require_hashed_pdk"}
@@ -19,9 +20,26 @@ def validate_policy(policy: dict) -> dict:
     ensure(isinstance(checks, list) and bool(checks), "At least one required check is mandatory")
     seen = set()
     for check in checks:
-        ensure(isinstance(check, dict) and set(check) ==
-               {"kind", "corner", "required_resource_kinds", "max_age_hours", "metrics"},
-               "Malformed check policy")
+        fields = {"kind", "corner", "required_resource_kinds", "max_age_hours", "metrics"}
+        if strict:
+            fields |= {"input_pins", "allowed_tools", "report_formats", "require_pinned_executable"}
+        ensure(isinstance(check, dict) and set(check) == fields, "Malformed check policy")
+        if strict:
+            pins = check["input_pins"]
+            ensure(isinstance(pins, dict) and bool(pins), "Exact input pins are required by policy v2")
+            for resource_id, checksum in pins.items():
+                identifier(resource_id)
+                ensure(isinstance(checksum, str) and HEX.fullmatch(checksum) is not None, "Invalid input pin digest")
+            tools, formats = check["allowed_tools"], check["report_formats"]
+            ensure(isinstance(tools, list) and bool(tools) and all(isinstance(t, str) for t in tools) and len(tools) == len(set(tools)), "Allowed tools required")
+            for tool in tools:
+                identifier(tool)
+                ensure(tool in pins, "Every allowed tool must have an exact metadata pin")
+            ensure(check["corner"] in pins, "The corner definition must have an exact pin")
+            from .parsers import FORMATS
+            ensure(isinstance(formats, list) and bool(formats) and all(isinstance(f, str) and f in FORMATS for f in formats)
+                   and len(formats) == len(set(formats)), "Invalid report format allowlist")
+            ensure(type(check["require_pinned_executable"]) is bool, "Executable pin requirement must be boolean")
         ensure(check["kind"] in CHECKS, "Unsupported check kind")
         identifier(check["corner"])
         key = check_key(check)
@@ -152,6 +170,26 @@ def evaluate(candidate: dict, policy: dict, trust: Trust, approvals: list[dict],
             stale.update(set(current_closure) ^ set(run["snapshot"]))
         if stale:
             block("RESULT_STALE", "Input/dependency changed: " + ", ".join(sorted(stale)), scope)
+        if policy["schema"] == "opentapeout.policy/v2":
+            for resource_id, expected_hash in requirement["input_pins"].items():
+                if resource_id in requirement["allowed_tools"] and resource_id != run["tool"]:
+                    continue
+                resource = graph.resources.get(resource_id)
+                if resource_id not in run["snapshot"] or resource is None:
+                    block("EXACT_INPUT_MISSING", f"Run does not bind required resource: {resource_id}", scope)
+                elif resource["sha256"] != expected_hash:
+                    block("INPUT_PIN_MISMATCH", f"Resource does not match policy checksum: {resource_id}", scope)
+            if run["tool"] not in requirement["allowed_tools"]:
+                block("TOOL_NOT_ALLOWED", "Run used a tool outside the policy allowlist", scope)
+            if run.get("completed_at") and run.get("format") not in requirement["report_formats"]:
+                block("REPORT_FORMAT_NOT_ALLOWED", "Report adapter is not permitted for this check", scope)
+            if requirement["require_pinned_executable"]:
+                identity = run.get("execution_identity") or {}
+                pin = run["tool_spec"].get("executable_sha256")
+                if (not isinstance(pin, str) or HEX.fullmatch(pin) is None
+                        or identity.get("sha256") != pin or identity.get("unchanged") is not True
+                        or run.get("capture_mode") != "managed"):
+                    block("EXECUTABLE_IDENTITY", "Requires a managed run with matching, unchanged executable bytes", scope)
         kinds = {graph.resources[key]["kind"] for key in run["snapshot"] if key in graph.resources}
         for kind in requirement["required_resource_kinds"]:
             if kind not in kinds:

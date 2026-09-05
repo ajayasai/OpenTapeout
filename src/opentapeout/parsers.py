@@ -14,6 +14,8 @@ from .util import TapeoutError, digest, ensure, finite_number, loads
 SCHEMA = "opentapeout.result/v1"
 CHECKS = {"DRC", "LVS", "STA", "CDC", "RDC", "POWER", "FORMAL", "LINT", "ERC", "EMIR"}
 MAX_REPORT = 32 * 1024 * 1024
+FORMATS = {"json", "junit", "klayout-rdb", "csv", "yosys-sat", "klayout-drc", "klayout-lvs", "opensta"}
+FORMAT_KINDS = {"yosys-sat": "FORMAL", "klayout-drc": "DRC", "klayout-lvs": "LVS", "opensta": "STA"}
 
 
 def validate_result(result: dict, run_id: str) -> dict:
@@ -60,6 +62,9 @@ def _xml(data: bytes) -> ET.Element:
 
 def parse(data: bytes, format_name: str, run_id: str) -> dict:
     ensure(len(data) <= MAX_REPORT, "Report exceeds parser size limit; use a normalized summary")
+    if format_name in {"klayout-drc", "klayout-lvs", "opensta"}:
+        from .physical import parse_physical
+        return parse_physical(data, format_name, run_id)
     if format_name == "yosys-sat":
         from .native import yosys_sat
         return yosys_sat(data, run_id)

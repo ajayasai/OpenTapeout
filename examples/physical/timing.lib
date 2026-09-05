@@ -1,0 +1,39 @@
+/* Original scalar educational library, not measured silicon characterization. */
+library(educational) {
+  delay_model : table_lookup;
+  time_unit : "1ns";
+  voltage_unit : "1V";
+  current_unit : "1mA";
+  pulling_resistance_unit : "1kohm";
+  capacitive_load_unit(1,pf);
+  leakage_power_unit : "1nW";
+  nom_voltage : 1.0;
+  nom_temperature : 25;
+  nom_process : 1;
+  input_threshold_pct_rise : 50;
+  input_threshold_pct_fall : 50;
+  output_threshold_pct_rise : 50;
+  output_threshold_pct_fall : 50;
+  slew_lower_threshold_pct_rise : 20;
+  slew_upper_threshold_pct_rise : 80;
+  slew_lower_threshold_pct_fall : 20;
+  slew_upper_threshold_pct_fall : 80;
+  cell(BUF) {
+    area : 1;
+    pin(A) { direction : input; capacitance : 0.01; }
+    pin(Y) {
+      direction : output;
+      function : "A";
+      max_capacitance : 1;
+      timing() {
+        related_pin : "A";
+        timing_sense : positive_unate;
+        timing_type : combinational;
+        cell_rise(scalar) { values("0.20"); }
+        cell_fall(scalar) { values("0.20"); }
+        rise_transition(scalar) { values("0.10"); }
+        fall_transition(scalar) { values("0.10"); }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections import deque
 from pathlib import Path
 
-from .util import TapeoutError, digest, ensure, file_digest, identifier, workspace_file
+from .util import HEX, TapeoutError, digest, ensure, file_digest, identifier, workspace_file
 
 KINDS = {"rtl", "netlist", "layout", "pdk", "tool", "corner", "rule_deck", "constraints",
          "library", "ip", "submodule", "git", "power_intent", "config", "other"}
@@ -117,6 +117,9 @@ def validate_resource(kind: str, metadata: dict, depends_on: list[str]) -> None:
     ensure(isinstance(depends_on, list) and all(isinstance(x, str) for x in depends_on),
            "Dependencies must be resource IDs")
     if kind == "tool":
+        if "executable_sha256" in metadata:
+            ensure(isinstance(metadata["executable_sha256"], str)
+                   and HEX.fullmatch(metadata["executable_sha256"]) is not None, "Invalid executable SHA-256 pin")
         ensure(isinstance(metadata.get("name"), str) and bool(metadata["name"].strip()), "Tool name required")
         ensure(isinstance(metadata.get("version"), str) and bool(metadata["version"].strip()),
                "Tool version required")

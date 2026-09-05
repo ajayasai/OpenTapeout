@@ -1,0 +1,33 @@
+# Educational resistor extraction and native comparison. No compare exemptions.
+require "json"
+run_id = ENV.fetch("OPENTAPEOUT_RUN_ID")
+puts "OT_BEGIN klayout-lvs #{run_id}"
+deep
+source("resistor.gds")
+wire = input(1, 0)
+contacts = input(2, 0)
+pin_labels = labels(2, 1)
+extract_devices(resistor("RES", 100.0), {"R" => wire, "C" => contacts})
+connect(contacts, pin_labels)
+schematic("resistor.cir")
+align
+netlist.simplify
+matched = compare
+layout_devices = 0
+layout_nets = 0
+circuits = 0
+netlist.each_circuit do |c|
+  circuits += 1
+  c.each_device { |d| layout_devices += 1 }
+  c.each_net { |n| layout_nets += 1 }
+end
+reference_devices = 0
+reference_nets = 0
+schematic.each_circuit do |c|
+  c.each_device { |d| reference_devices += 1 }
+  c.each_net { |n| reference_nets += 1 }
+end
+puts "OT_DATA " + JSON.generate({"matched" => matched, "layout_devices" => layout_devices,
+  "reference_devices" => reference_devices, "layout_nets" => layout_nets,
+  "reference_nets" => reference_nets, "circuits_compared" => circuits})
+puts "OT_END klayout-lvs #{run_id}"

@@ -1,0 +1,4 @@
+* Original educational 10um/2um resistor at 100 ohm/square; not a PDK.
+.SUBCKT RESISTOR A B
+R1 A B 500
+.ENDS RESISTOR

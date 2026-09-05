@@ -1,0 +1,21 @@
+# Educational width/spacing collector. Real KLayout operations, not foundry rules.
+require "json"
+run_id = ENV.fetch("OPENTAPEOUT_RUN_ID")
+puts "OT_BEGIN klayout-drc #{run_id}"
+source("resistor.gds")
+metal = input(1, 0)
+checks = {"WIDTH" => metal.width(0.3), "SPACE" => metal.space(0.3)}
+markers = []
+counts = {}
+checks.each do |name, result|
+  counts[name] = result.data.size
+  index = 0
+  result.data.each do |pair|
+    markers << {"rule" => name, "location" => "RESISTOR/#{name}/#{index}",
+                "message" => "KLayout #{name} marker", "severity" => "error",
+                "geometry" => [pair.to_s]}
+    index += 1
+  end
+end
+puts "OT_DATA " + JSON.generate({"rules" => counts, "shapes_checked" => metal.data.size, "violations" => markers})
+puts "OT_END klayout-drc #{run_id}"
