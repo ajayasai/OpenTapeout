@@ -24,7 +24,7 @@ No licensed commercial product was installed or benchmarked for this release.
   https://www.siemens.com/en-us/digital-thread/integrated-lifecycle-management/semiconductor/
   https://blogs.sw.siemens.com/electronics-semiconductors/2025/01/29/one-end-to-end-lifecycle-management-solution-is-built-for-todays-rapidly-evolving-ecosystem/
 
-## What OpenTapeout v0.2.0 demonstrates
+## What OpenTapeout demonstrates
 
 Inspectable and locally tested content-bound evidence, no old-pass fallback, exact
 waivers, independently supplied keys/policies, explicit minimal disclosure,
@@ -32,6 +32,11 @@ recipient-signed byte acknowledgment, per-approval revocation, irreversible rele
 withdrawal, expiring offline status and read-only rebuild planning. These are
 available as Apache-2.0 source and reproducible tests. The commercial equivalents
 of these exact semantics are **not assessed**, not assumed absent.
+
+v0.3 adds exact resource/tool/corner policy pins and native physical collector
+contracts. The physical microflow tests are described separately in
+PHYSICAL_QUALIFICATION.md, with observed results in VALIDATION.md. They close a
+local integration gap, not a demonstrated gap in commercial tools.
 
 A before/after microbenchmark measured latest-run selection on our own code. It
 is not an end-to-end or commercial-product performance comparison. The real Yosys

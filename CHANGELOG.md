@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 — 2026-09-05
+
+- Add exact-input policy v2, allowed tools/formats and reviewed policy-lock generation.
+- Pin observed executable bytes and canonical tool/corner definitions; retain v1 compatibility.
+- Capture native stdout and enforce physical-format/check-kind and stderr failure boundaries.
+- Add conservative KLayout DRC/LVS and OpenSTA setup/hold collector contracts and original educational examples.
+- Add mandatory native microflow CI with positive/defect gates, two timing libraries and offline signed-archive verification.
+- Add 109 regression tests. See versioned validation for observed results, not a commercial-superiority or foundry-qualification claim.
+
 ## 0.2.0 — 2026-09-05
 
 - Read-only ECO rebuild plans, evidence reuse analysis and candidate metric comparisons.

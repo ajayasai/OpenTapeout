@@ -28,3 +28,10 @@ cmake --build "$prefix/build" -j2
 mkdir -p "$prefix/bin"
 cp "$prefix/build/sta" "$prefix/bin/sta"
 echo "$prefix/bin" >> "$GITHUB_PATH"
+
+# Ubuntu's /usr/bin/klayout is a shell wrapper; qualify the actual ELF launcher.
+# Shared libraries and plugins still require independent environment control.
+test -x /usr/lib/klayout/klayout
+python -c 'from pathlib import Path; p=Path("/usr/lib/klayout/klayout"); assert p.open("rb").read(4) == b"\x7fELF", "Expected native KLayout executable"'
+echo /usr/lib/klayout >> "$GITHUB_PATH"
+echo "LD_LIBRARY_PATH=/usr/lib/klayout${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"

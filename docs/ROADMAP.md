@@ -1,5 +1,13 @@
 # Roadmap and acceptance criteria
 
+## Delivered in v0.3.0
+
+Exact-input policy v2, tool/format allowlists, executable SHA-256 checks, reviewed
+policy-lock generation and framed physical collectors. The native qualification
+harness includes KLayout DRC/LVS and two OpenSTA library cases with defects and
+offline archive verification. See VALIDATION.md for observed execution. These
+cell-scale examples are not an end-to-end production chip release.
+
 ## Delivered in v0.2.0
 
 Exact disclosure allowlists and minimal signed delivery capsules; designated-recipient
@@ -14,8 +22,8 @@ production qualification.
 
 Sanctioned OpenROAD/OpenSTA/KLayout and licensed vendor/version adapters, explicit
 rule and corner coverage, complete real-design release plus ECO invalidation, parser
-fuzzing, process-cancellation/TOCTOU tests and independent security review. The current
-Yosys example is genuine formal execution but does not meet these physical-signoff goals.
+fuzzing, process-cancellation/TOCTOU tests and independent security review. The native
+Yosys and physical microflows do not meet these full-chip signoff goals.
 
 ## P1 — enterprise trust and deployment
 
