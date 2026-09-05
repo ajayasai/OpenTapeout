@@ -1,0 +1,92 @@
+{
+  "approval_roles": [
+    "physical",
+    "verification"
+  ],
+  "distinct_approvers": true,
+  "forbid_self_approval": true,
+  "max_approval_age_hours": 168,
+  "require_delivery": true,
+  "require_git": true,
+  "require_hashed_pdk": true,
+  "require_managed_runs": true,
+  "required_checks": [
+    {
+      "corner": "nominal",
+      "kind": "DRC",
+      "max_age_hours": 168,
+      "metrics": {},
+      "required_resource_kinds": [
+        "layout",
+        "pdk",
+        "rule_deck"
+      ]
+    },
+    {
+      "corner": "nominal",
+      "kind": "LVS",
+      "max_age_hours": 168,
+      "metrics": {},
+      "required_resource_kinds": [
+        "layout",
+        "netlist",
+        "pdk",
+        "rule_deck"
+      ]
+    },
+    {
+      "corner": "nominal",
+      "kind": "STA",
+      "max_age_hours": 168,
+      "metrics": {
+        "tns_ns": {
+          "min": 0
+        },
+        "wns_ns": {
+          "min": 0
+        }
+      },
+      "required_resource_kinds": [
+        "netlist",
+        "constraints",
+        "library"
+      ]
+    },
+    {
+      "corner": "nominal",
+      "kind": "CDC",
+      "max_age_hours": 168,
+      "metrics": {},
+      "required_resource_kinds": [
+        "rtl",
+        "constraints"
+      ]
+    },
+    {
+      "corner": "nominal",
+      "kind": "POWER",
+      "max_age_hours": 168,
+      "metrics": {
+        "power_mw": {
+          "max": 100
+        }
+      },
+      "required_resource_kinds": [
+        "netlist",
+        "power_intent",
+        "library"
+      ]
+    },
+    {
+      "corner": "nominal",
+      "kind": "FORMAL",
+      "max_age_hours": 168,
+      "metrics": {},
+      "required_resource_kinds": [
+        "rtl",
+        "netlist"
+      ]
+    }
+  ],
+  "schema": "opentapeout.policy/v1"
+}
