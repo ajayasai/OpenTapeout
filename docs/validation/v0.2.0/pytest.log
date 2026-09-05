@@ -1,0 +1,34 @@
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+............                                                             [100%]
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.13.5-final-0 ________________
+
+Name                              Stmts   Miss  Cover   Missing
+---------------------------------------------------------------
+src/opentapeout/__init__.py           1      0   100%
+src/opentapeout/__main__.py           2      2     0%   1-2
+src/opentapeout/bundle.py           127      3    98%   92-93, 162
+src/opentapeout/cli.py              249     66    73%   151-152, 154-161, 163-164, 166-169, 176-177, 180, 183-185, 187, 189-192, 194-196, 198-205, 210, 212-213, 216-217, 222, 226, 228-233, 235-240, 244-255, 263, 273
+src/opentapeout/commands.py          76      1    99%   87
+src/opentapeout/delivery.py         152      3    98%   114-115, 172
+src/opentapeout/demo.py              59      0   100%
+src/opentapeout/engine.py           300      2    99%   59, 237
+src/opentapeout/git_capture.py       25      6    76%   20-21, 28-31
+src/opentapeout/graph.py            113      4    96%   96-97, 103-104
+src/opentapeout/lifecycle.py         69      0   100%
+src/opentapeout/native.py            30      3    90%   36, 43-44
+src/opentapeout/parsers.py           97      1    99%   121
+src/opentapeout/planning.py         111      1    99%   108
+src/opentapeout/policy.py           161      3    98%   101, 133, 136
+src/opentapeout/signing.py           68      0   100%
+src/opentapeout/store.py            124      1    99%   137
+src/opentapeout/tree_capture.py      21      1    95%   17
+src/opentapeout/util.py             127      4    97%   44-45, 147-148
+src/opentapeout/web.py               83      3    96%   76, 90, 106
+---------------------------------------------------------------
+TOTAL                              1995    104    95%
+Coverage JSON written to file docs/validation/v0.2.0/coverage.json
+300 passed in 19.79s

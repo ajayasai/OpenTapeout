@@ -1,23 +1,40 @@
 # Roadmap and acceptance criteria
 
-This is a roadmap, not a list of delivered features.
+## Delivered in v0.2.0
 
-## P0 — validate on real flows before production release
+Exact disclosure allowlists and minimal signed delivery capsules; designated-recipient
+signed receipts; per-approval revocation; irreversible signed release withdrawal;
+short-lived offline status with caller-retained anti-replay sequence; read-only
+rebuild planning and metric comparisons; an indexed evidence selector; conservative
+native Yosys SAT parsing and a real-executable CI qualification harness. See the
+validation report for what was actually run, rather than interpreting this list as
+production qualification.
 
-Qualify report adapters using sanctioned OpenROAD/OpenSTA/KLayout and licensed vendor/version reports. Add coverage/completion checks for the specific configured rules and corners. Demonstrate a full real-design release and ECO invalidation without false-fresh evidence. Perform independent security review, parser fuzzing, process-cancellation/TOCTOU tests, cross-platform testing, and crash/recovery drills.
+## P0 — qualify physical flows
 
-## P1 — confidentiality and authenticated operations
+Sanctioned OpenROAD/OpenSTA/KLayout and licensed vendor/version adapters, explicit
+rule and corner coverage, complete real-design release plus ECO invalidation, parser
+fuzzing, process-cancellation/TOCTOU tests and independent security review. The current
+Yosys example is genuine formal execution but does not meet these physical-signoff goals.
 
-Add a minimal delivery-only package that excludes private evidence by an explicit disclosure policy, authenticated foundry-upload receipt integrations, remote signing/HSM support, OIDC-backed runner attestations, enterprise SSO and independently authenticated reviewer identities. Introduce permission-scoped authenticated write APIs only after authorization and concurrency review. Preserve the current no-private-keys-in-browser design.
+## P1 — enterprise trust and deployment
 
-## P2 — interoperability and scale
+OIDC-backed runner identity, enterprise SSO, independently authenticated reviewer
+identity, reviewed permission-scoped write APIs, remote/HSM signing, independent
+status distribution and real foundry receipt integration. A recipient signature is
+not yet a foundry API acknowledgment. Disclosure allowlists are not legal compliance.
 
-Qualify native tool/version adapters, OpenWaiver interoperability against its actual schema, declarative IP/BOM import/export, pluggable object storage, signed external checkpoint destinations, snapshot-backed event replay, and PostgreSQL/multi-user concurrency. Benchmark release-scale objects and >1 million events; current in-memory replay and full rehash costs are not claimed to scale to that workload.
+## P2 — distributed scale and interoperability
 
-## P3 — product workflows
+PostgreSQL/multi-user concurrency, pluggable object storage, cache/snapshot-backed
+replay and recovery drills; benchmarks with million-event ledgers and realistic
+large artifacts. The selector optimization does not solve full-history replay or
+rehashing costs. Qualify a documented hardware BOM exchange schema and actual
+OpenWaiver interoperability before claiming standards/vendor compatibility.
 
-Add approval-specific revocation, explicit release withdrawal events, multi-project dashboards, scheduler integration, role-specific review experiences, automated graph extraction with auditable manual overrides, and careful selective invalidation to reduce conservative false-stale approvals.
+## P3 — workflow breadth
 
-## Avoided shortcuts
-
-No blanket “all commercial tools are worse” claims, AI-generated signoff assertions, hidden fallback from a failed run to an older pass, broad wildcard waivers, magic “force release” bypass, built-in universal signing key, mutation over an unauthenticated browser API, or public upload of proprietary input data.
+Multi-project dashboards, scheduler integration, auditable dependency extraction,
+role-specific review queues and careful selective approval invalidation. Preserve
+explicit input declarations and fail-closed behavior; no AI-generated signoff
+assertions, wildcard waivers, forced release bypass or private keys in the browser.

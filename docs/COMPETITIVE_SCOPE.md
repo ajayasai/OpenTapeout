@@ -1,34 +1,52 @@
-# Competitive scope — evidence, not superiority claims
+# Competitive scope — reviewed 2026-09-05
 
-Reviewed against official product descriptions on 5 September 2026. No commercial licenses, production datasets or vendor sandboxes were available for a head-to-head test. “Not assessed” means exactly that; it must not be interpreted as an absent commercial feature.
+Universal superiority has not been established. A public feature page can establish
+that a capability is advertised; silence on that page cannot establish its absence.
+No licensed commercial product was installed or benchmarked for this release.
 
-| Dimension | OpenTapeout 0.1.0 | Commercial reference point |
-|---|---|---|
-| Inspectable implementation / self-hosted local ledger | Apache-2.0 source; SQLite and ordinary files; no hosted account required. | Vendor products use their own licensing/deployment models; a cost/security comparison was not performed. |
-| Evidence invalidation behavior | Exact hash/closure comparison, obsolete-derivation tracking, before/after input checks, failing-case tests. | IPLM/SOS traceability and governance are documented; their detailed stale-result semantics were not assessed. |
-| IP lifecycle/catalog/workspace management | Input/version records, Git/submodule capture and release snapshots only. | Perforce IPLM documents cross-project IP and metadata traceability, catalog/reuse and governance; substantially broader scope. |
-| Native engineering-data integrations | Four report-adapter contracts and Python/CLI APIs; no qualified proprietary native plugins. | Keysight SOS documents integrations with major EDA design environments, including Cadence Virtuoso and other vendors. |
-| GitHub-native workflows | Source-delivered composite gate action and CI workflow; consult actual workflow runs for execution status. | Synopsys documents GitHub-triggered EDA execution with results returned to pull requests. |
-| Portable signed evidence | Implemented Ed25519 candidate approvals and offline signed ZIP verification against external policy/trust. | Detailed commercial export/signature interoperability was not assessed. |
-| Enterprise identity, global deployments, commercial support | Not implemented/proven. Read-only token-protected API and trusted local operators only. | Enterprise breadth and product support are material reasons not to describe this alpha as universally superior. |
-| Real tapeout readiness | Synthetic workflow and adversarial software tests only. | No comparative real-design benchmark or foundry qualification was performed. |
+## What primary sources establish
 
-## What could become a genuine advantage
+- Perforce IPLM describes cross-project IP metadata, traceability and reuse. Its
+  documentation explicitly covers immutable release workspaces, hierarchical IP/BOM
+  relationships and staged subsystem updates. These are not missing features we can
+  honestly claim to have invented.
+  https://www.perforce.com/products/helix-iplm
+  https://help.perforce.com/helix-iplm/public-latest/latest/Content/MethodicsIPLM/Workspaces.htm
+  https://help.perforce.com/helix-iplm/public-latest/latest/Content/MethodicsIPLM/From_IPs_to_Projects__IP_Hierarchies_.htm
+- Keysight SOS Core describes engineering data/version management and integration
+  with Cadence, Synopsys and Siemens environments. Keysight's 2026 Virtuoso discussion
+  covers visual design diff and embedded workflows.
+  https://www.keysight.com/us/en/products/design-engineering-software/engineering-data-management/sos-core.html
+  https://www.keysight.com/blogs/en/tech/sim-des/sos-core-and-cadence-virtuoso-modernizing-design-data-management
+- Siemens describes semiconductor lifecycle management spanning engineering,
+  manufacturing and supply-chain traceability. OpenTapeout is not a replacement
+  for that entire scope.
+  https://www.siemens.com/en-us/digital-thread/integrated-lifecycle-management/semiconductor/
+  https://blogs.sw.siemens.com/electronics-semiconductors/2025/01/29/one-end-to-end-lifecycle-management-solution-is-built-for-todays-rapidly-evolving-ecosystem/
 
-A vendor-neutral evidence model whose invalidation rules are inspectable, tested and portable is a concrete design choice. OpenTapeout exposes explanations, checks derived-artifact provenance, keeps policy decisions reproducible, and deliberately separates artifact integrity from execution trust. These are implemented capabilities, not proof that proprietary systems lack equivalent features.
+## What OpenTapeout v0.2.0 demonstrates
 
-## Required head-to-head experiment
+Inspectable and locally tested content-bound evidence, no old-pass fallback, exact
+waivers, independently supplied keys/policies, explicit minimal disclosure,
+recipient-signed byte acknowledgment, per-approval revocation, irreversible release
+withdrawal, expiring offline status and read-only rebuild planning. These are
+available as Apache-2.0 source and reproducible tests. The commercial equivalents
+of these exact semantics are **not assessed**, not assumed absent.
 
-Obtain lawful access to competing systems and the same licensed representative design flows. Freeze tool/PDK versions and define expected outcomes before testing. Inject controlled RTL/netlist/layout, PDK-file, rule-deck, SDC, corner, invocation-option, waiver and approval changes. Measure false-fresh and false-stale decisions, explanation completeness, time to identify the affected evidence, import effort, user review time, cold/full rehash costs, concurrent writer throughput, large-object behavior, recovery after interruption, and operational/security overhead. Publish the raw permitted test vectors and exact configuration with uncertainty, not an unsupported ranking.
+A before/after microbenchmark measured latest-run selection on our own code. It
+is not an end-to-end or commercial-product performance comparison. The real Yosys
+CI qualification covers a small combinational proof, not a production tapeout.
 
-## Official sources
+## Acceptance work needed for a stronger comparison
 
-Perforce IPLM product: https://www.perforce.com/products/helix-iplm
+Use the same sanctioned project and change sequence in every product. Measure false
+freshness and false staleness separately; include missing dependencies, PDK/rule-deck
+updates, ECOs, tool failures, interrupted reports, waived violations, expired and
+revoked approvals, recipient substitution and archive tampering. Record cold/warm
+latency, memory, storage, administrator actions and operator effort, with versions,
+configuration and public reproducers wherever disclosure permits.
 
-Perforce IP governance: https://www.perforce.com/blog/iplm/ip-governance
-
-Keysight SOS Core: https://www.keysight.com/us/en/products/design-engineering-software/engineering-data-management/sos-core.html
-
-Synopsys GitHub EDA workflow (27 May 2026): https://www.synopsys.com/blogs/chip-design/chip-design-tools-github-hardware-development.html
-
-GitHub secure-use guidance for commit pinning: https://docs.github.com/en/actions/reference/security/secure-use
+Qualify multi-corner DRC/LVS/STA with approved tools/PDKs, demonstrate recovery and
+multi-user authorization, and conduct an independent security review. Industrial
+support, native integrations, SSO, availability and scale must be measured rather
+than replaced with an untested checkbox. See ROADMAP.md for the remaining gaps.

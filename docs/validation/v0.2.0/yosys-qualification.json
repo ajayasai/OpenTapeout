@@ -1,0 +1,26 @@
+{
+  "qualified": true,
+  "tool_version": "Yosys 0.33 (git sha1 2584903a060)",
+  "scope": "combinational Yosys SAT only; no foundry signoff",
+  "passing_proof": {
+    "schema": "opentapeout.result/v1",
+    "run_id": "ae1c025a-db85-44db-b9d8-f37e7c892e8d",
+    "status": "pass",
+    "complete": true,
+    "metrics": {
+      "proofs_passed": 1,
+      "proofs_failed": 0,
+      "proofs_total": 1,
+      "problems_started": 1,
+      "sat_variables": 105,
+      "sat_clauses": 270
+    },
+    "violations": []
+  },
+  "passing_exit_code": 0,
+  "unregistered_drift_blocked": true,
+  "registered_eco_stale": true,
+  "counterexample_exit_code": 1,
+  "counterexample_blocked": true,
+  "checks_reused_after_eco": 0
+}

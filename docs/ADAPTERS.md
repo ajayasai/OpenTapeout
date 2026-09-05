@@ -44,3 +44,19 @@ KLayout RDB structure: https://www.klayout.de/rdb_format.html
 KLayout DRC basics: https://www.klayout.de/doc/manual/drc_basic.html
 
 Ed25519 API used for signatures: https://cryptography.io/en/latest/hazmat/primitives/asymmetric/ed25519/
+
+## v0.2.0 native Yosys SAT adapter
+
+`--format yosys-sat` is restricted to FORMAL runs. It accepts ordinary Yosys
+transcripts containing explicit `Import proof-constraint` lines from
+`sat -prove SIGNAL VALUE`, paired solver/outcome records and a single end-of-script
+footer. Errors, incomplete/mixed logs and missing proof constraints cannot pass.
+Zero-assertion/vacuous, induction and arbitrary coverage/satisfiability logs are not
+qualified. Register the proof script and relevant RTL as dependencies and bind the
+actual argv/version. Parsing cannot authenticate a dishonest execution environment.
+
+Run `scripts/qualify_yosys.py` with an actual Yosys executable; see the separate
+GitHub CI job for its exact installed version and report. This qualifies the small
+combinational example only. Native DRC/LVS/STA and foundry rule coverage remain
+outstanding. Primary source for the explicit proof command and success transcript:
+https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/more_scripting/model_checking.rst

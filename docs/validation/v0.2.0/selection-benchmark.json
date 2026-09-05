@@ -1,0 +1,33 @@
+{
+  "benchmark": "latest-run-selection-only",
+  "runs": 20000,
+  "required_checks": 100,
+  "repetitions": 5,
+  "python": "3.13.5",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "identical_outputs": true,
+  "timings": {
+    "former_scan": {
+      "median_seconds": 0.2994821160000356,
+      "samples_seconds": [
+        0.2994821160000356,
+        0.3002505099999553,
+        0.3005039219999617,
+        0.2963757730000225,
+        0.2944043809999357
+      ]
+    },
+    "indexed_selection": {
+      "median_seconds": 0.0036847369999577495,
+      "samples_seconds": [
+        0.004183916999977555,
+        0.0036589190000313465,
+        0.0036847369999577495,
+        0.0036826539999310626,
+        0.003703965999989123
+      ]
+    }
+  },
+  "median_speedup": 81.27638851930804,
+  "limitations": "Synthetic in-memory selection only; excludes ledger replay, file hashing, storage and EDA. No vendor comparison."
+}

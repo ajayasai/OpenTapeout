@@ -35,6 +35,16 @@ def main() -> None:
         page.locator("#resource-table tbody tr").filter(has_text="netlist").first.click()
         page.wait_for_selector("#impact-detail:not(.hidden)")
         assert "evidence runs" in page.locator("#impact-detail").inner_text()
+        page.locator("[data-view=planning]").click()
+        page.wait_for_selector("#plan-checks tbody tr")
+        page.locator("#plan-change").select_option("netlist")
+        page.locator("#plan-run").click()
+        page.wait_for_function("document.getElementById('plan-resources').textContent.includes('netlist')")
+        assert page.locator("#plan-resources tbody tr").count() >= 1
+        page.locator("#compare-run").click()
+        page.wait_for_selector("#comparison-metrics tbody tr")
+        page.locator("[data-view=lifecycle]").click()
+        assert "No minimal delivery capsules" in page.locator("#delivery-list").inner_text()
         page.locator("[data-view=approvals]").click()
         assert page.locator("#approval-list .identity").count() == 2
         page.locator("[data-view=audit]").click()

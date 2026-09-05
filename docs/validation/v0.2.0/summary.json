@@ -1,0 +1,77 @@
+{
+  "version": "0.2.0",
+  "local_tests": {
+    "passed": 300,
+    "failed": 0,
+    "skipped": 0,
+    "python": "3.13.5"
+  },
+  "coverage": {
+    "covered_lines": 1891,
+    "num_statements": 1995,
+    "percent_covered": 94.78696741854637,
+    "percent_covered_display": "95",
+    "missing_lines": 104,
+    "excluded_lines": 0,
+    "percent_statements_covered": 94.78696741854637,
+    "percent_statements_covered_display": "95"
+  },
+  "browser": {
+    "version": "144.0.7559.96",
+    "passed": true,
+    "javascript_errors": [],
+    "mobile_horizontal_overflow": false
+  },
+  "dependencies": {
+    "cryptography": "46.0.4",
+    "fastapi": "0.128.2",
+    "uvicorn": "0.48.0",
+    "pytest": "9.0.2",
+    "pytest-cov": "7.0.0",
+    "httpx": "0.28.1"
+  },
+  "runtime_sha256": {
+    "src/opentapeout/__init__.py": "61f66181d3ada8be4c1ac78c3e9c30e93ed54cdff8079574f75043b265cf69b0",
+    "src/opentapeout/__main__.py": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4",
+    "src/opentapeout/bundle.py": "b42dd4a6ef50a0a8f760018cb7f6530aef16742aaefd89ec2805b26dbfc14add",
+    "src/opentapeout/cli.py": "d1536c48d69cc0ba48a4869ce94ed1079de1c81d069b082f8a315c6540c84333",
+    "src/opentapeout/commands.py": "bcc8802d7a6c2883180f5e13a479c4346c137620aff7a88f734a837992a28830",
+    "src/opentapeout/delivery.py": "fd6ca250ae609d10e3e46fbecf14d3a498e200dc8ff0e93a04f537cb1e8a467a",
+    "src/opentapeout/demo.py": "e7660ecf09459b02618a3444c79e26b393e5eb11f1ad749e515d1c6d3e407cbf",
+    "src/opentapeout/engine.py": "ff99296f1897cd03548b50f030041dc65b856c510b6c61d32b063619931dfef7",
+    "src/opentapeout/git_capture.py": "e1adb6b4e86037c3af13192c06ac5a5f750c51b76fa93fcdc3f411bee1b41ff2",
+    "src/opentapeout/graph.py": "14278d291f8663d1151befaf0ae7aeaf649831020fbf887539be65df4c8952f4",
+    "src/opentapeout/lifecycle.py": "171ce8bfcc9130823c394f70ab152a1c0f4c7d0c8769be09595d41896673e4dc",
+    "src/opentapeout/native.py": "b926842300d8d10f14971c6c1b7b3d0c76d688552e8a23c6c9829d8edd77cff8",
+    "src/opentapeout/parsers.py": "8d39a08b3dff52bdeb44edfcd1859ad4de0856b449e2762c9e63cfbf6cc78f62",
+    "src/opentapeout/planning.py": "a72d5583861cad0b81fdeca64fa199272616c81aa068c79511682c509850f724",
+    "src/opentapeout/policy.py": "81469554855fa48a17ee79bd4a67e1152409a29b0b60ceedf3acd605db5a4054",
+    "src/opentapeout/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/opentapeout/signing.py": "9da368408039f0cea03fe719848ee898c5837b2523f5b7c83856de5307c6294c",
+    "src/opentapeout/static/app.js": "9b029bf0a772440e2b312247a2d280c4b74769d23c654d29a5cfd83c25b4264f",
+    "src/opentapeout/static/control.js": "46ae586e7cd8323b61a531a297c5267a88950b71e52b737a794d4fcb8e35525e",
+    "src/opentapeout/static/index.html": "abde0d55eb39037e8ddb4f6777c04c9211f825290d9be9146df101dc98722ecc",
+    "src/opentapeout/static/style.css": "a2a2960cf5725d91b3fada58514029e5bd6504a215be06c82f58082c4d7504b4",
+    "src/opentapeout/store.py": "6db77c7b1664ace95e61ebce0036fbfc39bf32b7fece276bdd3759f8034b458b",
+    "src/opentapeout/tree_capture.py": "23f9ab414631c1af027dabe5363ee10d8e3976cca9eb25149f96d717b592ac3a",
+    "src/opentapeout/util.py": "f24d5b19531ceec9e83d21ef0582f76092d41fa248d033786e053d928113517e",
+    "src/opentapeout/web.py": "a54ec4c17aacc073cd1013ef5e8108c26a0c396aa917983c359f5597d0b226e7"
+  },
+  "local_native_yosys": "not available locally; independently executed in GitHub Actions",
+  "qualification_boundary": "No foundry signoff or commercial head-to-head validation",
+  "github_ci": {
+    "run_id": 33962688030,
+    "commit": "a23de6effcdb4748b3feb20d0656c0c9443f50ad",
+    "url": "https://github.com/ajayasai/OpenTapeout/actions/runs/33962688030",
+    "python_matrix": [
+      "3.11",
+      "3.12",
+      "3.13"
+    ],
+    "jobs_all_passed": true,
+    "native_yosys_job": 101297216972,
+    "native_yosys_version": "Yosys 0.33 (git sha1 2584903a060)",
+    "native_yosys_passed": true,
+    "qualification_artifact_id": 9968427190
+  }
+}
