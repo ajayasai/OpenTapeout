@@ -1,68 +1,96 @@
 # Validation record
 
-## v0.2.0 local validation — 2026-09-05
+## v0.3.0 — observed 2026-09-05
 
-300 tests passed; no failures or skips. Python 3.13.5. Python statement coverage:
-1,891 covered of 1,995 statements (94.79%). Scope includes the existing 198 tests
-plus 102 new tests for lifecycle controls, capsule integrity/confidentiality,
-recipient identity, status expiry/replay, planning, CLI/API access, native parser
-failure modes and numerical overflow. Test count is not proof of production safety.
+**409 local tests passed, no failures or skips.** Python 3.13.5. Python statement
+coverage is **2,122 of 2,230 statements (95.16%)**. The 109 new tests cover exact
+input/tool/corner policy binding, canonical definitions, executable identity,
+review-only policy drafts, stdout/stderr capture, nonvacuous physical reports,
+missing constraints, malformed numbers and contradictory or swapped timing modes.
+This is statement coverage, not branch coverage, native tool coverage or proof of safety.
 
-The actual new-suite results, source hashes and tested dependency versions are in
-`validation/v0.2.0/summary.json`; the test output is in `validation/v0.2.0/pytest.log`.
+The source hashes and dependency versions are in `validation/v0.3.0/summary.json`;
+raw local test output is in `validation/v0.3.0/pytest.log`. A clean installed wheel
+reported version 0.3.0 and reproduced the synthetic stale-netlist gate with exit 2
+and CANDIDATE_CHANGED, DERIVATION_STALE and RESULT_STALE blockers. Source compilation,
+package building and the repository's heuristic publication scan also passed.
+The heuristic scan is not a comprehensive secret scanner or security audit.
 
-Chromium 144.0.7559.96 passed the self-contained synthetic dashboard checks for
-navigation, search, evidence inspection, dependencies, what-if planning, comparisons,
-delivery lifecycle, approvals, audit, export and mobile-width layout. No JavaScript
-errors or horizontal overflow were observed. Screenshot and standalone HTML are
-generated artifacts, not committed private workspaces.
+Chromium 144.0.7559.96 passed the synthetic dashboard checks for navigation, search,
+evidence inspection, dependencies, planning, candidate comparison, delivery status,
+approvals, audit and export. No JavaScript errors or horizontal overflow were
+observed at the tested desktop/mobile sizes. See `validation/v0.3.0/browser.json`.
+The browser is still read-only; these checks do not qualify multi-user writes.
 
-## Evidence-selection microbenchmark
+## Remote native qualification
 
-`python scripts/benchmark_selection.py`: 20,000 runs, 100 required checks, five
-repetitions. Former median 0.299482116 s; indexed median 0.003684737 s; ratio 81.276x.
-Outputs were identical. Details and environment are in
-`validation/v0.2.0/selection-benchmark.json`.
+**All five jobs passed** in [CI run 33970046491](https://github.com/ajayasai/OpenTapeout/actions/runs/33970046491)
+at commit `3151525fa9055d8dcd2741ba0441e57c122f79ef`: Python 3.11, 3.12 and 3.13,
+real Yosys SAT qualification, and real KLayout DRC/LVS plus OpenSTA qualification.
+The Python jobs also built distributions and enforced a minimum 90% statement
+coverage. Native execution was observed in GitHub CI, not the local authoring container.
 
-This compares only latest-run selection against the previous scan algorithm. It
-excludes ledger replay, workspace drift hashing, object verification, EDA execution,
-network/storage and user interaction. It is not whole-application or commercial
-performance evidence. Timings are observations, not CI pass thresholds.
+The physical job used **KLayout 0.28.16** and **OpenSTA 3.1.0**. The installer
+verified exact upstream OpenSTA/CUDD commits and invoked KLayout's actual ELF
+executable `/usr/lib/klayout/klayout`, not the 78-byte `/usr/bin/klayout` shell
+wrapper. It captured before/after launcher SHA-256 values. Shared libraries,
+plugins and environment dependencies are not covered by that single hash.
+The recorded tool versions are observations, not assertions that they are the newest.
 
-## Remote qualification
+The workflow artifact was downloaded and its ZIP SHA-256 matched GitHub's artifact
+digest. The exact JSON is retained in `validation/v0.3.0/physical-qualification.json`.
+The source commit, run, artifact ID/digest and upstream pins are recorded separately
+in `validation/v0.3.0/native-provenance.json` so the observations remain attributable.
 
-The GitHub workflow tests Python 3.11, 3.12 and 3.13, builds packages, enforces 90%
-minimum statement coverage, checks publication hygiene and reproduces the synthetic
-stale-result gate. A separate Ubuntu 24.04 job installs and executes real Yosys.
-Its qualification report and exact tool version are published as a workflow artifact.
-**Observed run:** [33962688030](https://github.com/ajayasai/OpenTapeout/actions/runs/33962688030),
-commit `a23de6effcdb4748b3feb20d0656c0c9443f50ad`. All four jobs passed: Python
-3.11, 3.12, 3.13 and native Yosys. The executed tool was **Yosys 0.33
-(git sha1 2584903a060)** on Ubuntu 24.04.4 / Python 3.12.14.
-The downloaded workflow artifact is retained as `validation/v0.2.0/yosys-qualification.json`.
-It records one successful proof (105 variables, 270 clauses), both stale/drift
-checks, zero reused checks after the ECO and a rejected counterexample (exit 1).
-This observed result is distinct from merely having a workflow configured.
+| Executed test | Observed result |
+|---|---|
+| Native width/spacing checks | Two named rules executed; one resistor shape; zero violations in the positive control. |
+| Native extracted-netlist comparison | One device and two nets in each netlist; comparison matched. |
+| Timing with educational typical library | Setup worst slack approximately +7.600 ns; hold approximately +0.400 ns. |
+| Timing with separate educational slow library | Setup approximately +7.300 ns; hold approximately +0.700 ns. |
+| Unregistered layout change | WORKSPACE_DRIFT blocked the old candidate. |
+| Registered layout ECO | RESULT_STALE invalidated the old evidence. |
+| Introduced width defect | One native WIDTH violation; fresh focused candidate blocked by metric and violation checks. |
+| Reference resistance changed from 500 to 750 ohms | Native LVS mismatch; fresh focused candidate blocked. |
+| Clock period shortened from 10 to 1 ns | Native setup slack approximately -1.400 ns; fresh focused candidate blocked. |
+| Output constraints removed | Candidate blocked by unknown/incomplete evidence and missing required metrics, not accepted as zero slack. |
+| Signed full-evidence archive | Positive exact-policy candidate approved by two distinct reviewer keys, sealed, then verified offline against external policy/trust. |
 
-Yosys acceptance criteria: actual combinational miter proof succeeds; unregistered
-RTL edits block; registered ECO invalidates the old proof; the planner reuses no
-stale proof; an actual counterexample returns nonzero and cannot release. The
-harness fails, rather than skips or fabricates a result, when Yosys is unavailable.
-Yosys was not available in the local authoring container, so native execution is
-verified in the remote job, not claimed as a local result. The pinned GitHub
-actions emitted Node-target deprecation warnings while successfully running on
-Node 24; these were runner/action warnings, not failures in the Python test suite.
+The negative candidates used current pins and evaluated evidence without requiring
+approvals solely to isolate the failure cause. They did not fail merely because
+of old hashes or missing signatures. The normal positive candidate still required
+two authorized reviewers. See the harness for these explicit assertions.
+
+These are **separate cell-scale educational physical and timing microflows**, not
+one chip taken from RTL through foundry signoff. The resistor technology, Liberty
+values and constraints are original examples, not a qualified PDK or measured
+silicon characterization. No licensed commercial engine was installed or compared.
+
+## Development failures preserved in CI
+
+Earlier development runs caught a missing Ubuntu OpenSTA package, old CUDD
+Autotools requirements, missing Flex development headers, incorrect KLayout
+plain-text script extensions and unsupported OpenSTA min/max summary labels.
+Those failures did not pass the gate. The installer/collectors were corrected and
+the regression suite expanded. An initial successful native run (33969715603)
+hashed the KLayout wrapper; the subsequent run above strengthened the invocation
+to hash the ELF executable. Compiler and action-runtime deprecation warnings were
+observed; a passing workflow is not a claim of warning-free builds.
 
 ## Not established
 
-No actual tapeout, sanctioned foundry PDK/DRC/LVS/STA qualification, commercial
-head-to-head benchmark, independent security audit, multi-tenant deployment,
-HSM signing, real foundry upload or million-event replay qualification was performed.
-Docker is provided but was not validated in this upgrade. The managed runner is
-not a sandbox. Browser review does not constitute a security audit.
+No production tapeout, sanctioned full-chip multi-mode/multi-corner PDK signoff,
+Calibre/IC Validator/PrimeTime/Tempus qualification, commercial head-to-head
+benchmark, independent security audit, multi-tenant deployment, distributed
+million-event replay, HSM signing or real foundry API acceptance was performed.
+Docker remains provided but unvalidated in this upgrade. The runner is not a
+sandbox; pinning does not defeat a hostile administrator, infer every input or
+make the runtime hermetic. Native collector success does not certify manufacturing.
 
-## Historical v0.1.0 records
+## Historical records
 
-The original validation files directly under `validation/` remain historical v0.1.0
-records (198 tests). They are not the source-hash manifest for v0.2.0. Use the
-versioned subdirectory for this upgrade.
+v0.2.0 records remain in `validation/v0.2.0/` (300 tests, 94.79% statement coverage,
+real Yosys qualification). Its 20,000-run/100-check benchmark measured about 81.3x
+improvement only in latest-run selection versus our earlier repeated-scan code,
+not end-to-end or vendor performance. Original files directly in `validation/`
+remain historical v0.1.0 observations (198 tests), not current source hashes.

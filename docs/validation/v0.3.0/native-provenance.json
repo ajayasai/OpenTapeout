@@ -1,0 +1,18 @@
+{
+  "schema": "opentapeout.validation-provenance/v1",
+  "scope": "CI qualification of educational microflows; not foundry signoff or commercial comparison",
+  "commit": "3151525fa9055d8dcd2741ba0441e57c122f79ef",
+  "run_id": 33970046491,
+  "run_url": "https://github.com/ajayasai/OpenTapeout/actions/runs/33970046491",
+  "physical_job_id": 101316822002,
+  "all_five_jobs_passed": true,
+  "artifact_id": 9970696730,
+  "artifact_zip_sha256": "11bd80acf76bd76725b416b14b44397b78c8cd17f110a6315ae2daba7be1c24f",
+  "qualification_json_sha256": "5707617746efd9da506c6ffa774c2d1fee3c9e28511833b78fdaa68764e3d4e1",
+  "source_pins": {
+    "OpenSTA": "2996e37a3aa7fdfd197b84842df719e70757657f",
+    "CUDD": "f54f533303640afd5dbe47a05ebeabb3066f2a25"
+  },
+  "klayout_source": "Ubuntu package; actual /usr/lib/klayout/klayout ELF executable invoked and hashed",
+  "runtime_control_limit": "Launcher hashes do not cover shared libraries, plugins, child tools or the entire environment."
+}

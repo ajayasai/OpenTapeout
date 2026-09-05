@@ -1,0 +1,140 @@
+{
+  "offline_archive_verified": true,
+  "archive_sha256": "84f71ad6e75e3b4393b6fdffd421603ed7bc0e6ca79fc060c0e24ff262a43543",
+  "negative_gate_codes": {
+    "BAD-WIDTH": [
+      "METRIC_THRESHOLD",
+      "UNWAIVED_VIOLATION"
+    ],
+    "BAD-LVS": [
+      "METRIC_THRESHOLD",
+      "UNWAIVED_VIOLATION"
+    ],
+    "BAD-STA": [
+      "METRIC_THRESHOLD",
+      "UNWAIVED_VIOLATION"
+    ],
+    "BAD-CONSTRAINTS": [
+      "METRIC_MISSING",
+      "RESULT_UNKNOWN"
+    ]
+  },
+  "qualified": true,
+  "scope": "educational cell-scale native DRC/LVS and two timing libraries; NOT foundry or full-chip signoff",
+  "versions": {
+    "klayout": "KLayout 0.28.16",
+    "opensta": "3.1.0"
+  },
+  "positive_metrics": {
+    "drc": {
+      "shapes_checked": 1,
+      "rule:WIDTH:checked": 1,
+      "rule:WIDTH:violations": 0,
+      "rule:SPACE:checked": 1,
+      "rule:SPACE:violations": 0,
+      "rules_checked": 2,
+      "violation_count": 0
+    },
+    "lvs": {
+      "layout_devices": 1,
+      "reference_devices": 1,
+      "layout_nets": 2,
+      "reference_nets": 2,
+      "circuits_compared": 1,
+      "matched": 1,
+      "violation_count": 0
+    },
+    "sta-tt": {
+      "clocks": 1,
+      "constraints_ok": 1,
+      "setup_paths_reported": 1,
+      "setup_worst_slack_ns": 7.599999904633,
+      "setup_tns_ns": 0.0,
+      "hold_paths_reported": 1,
+      "hold_worst_slack_ns": 0.399999976158,
+      "hold_tns_ns": 0.0,
+      "wns_ns": 0,
+      "tns_ns": 0.0,
+      "violation_count": 0
+    },
+    "sta-ss": {
+      "clocks": 1,
+      "constraints_ok": 1,
+      "setup_paths_reported": 1,
+      "setup_worst_slack_ns": 7.299999713898,
+      "setup_tns_ns": 0.0,
+      "hold_paths_reported": 1,
+      "hold_worst_slack_ns": 0.699999988079,
+      "hold_tns_ns": 0.0,
+      "wns_ns": 0,
+      "tns_ns": 0.0,
+      "violation_count": 0
+    }
+  },
+  "exact_pin_gate_passed": true,
+  "layout_drift_blocked": true,
+  "layout_eco_stale": true,
+  "width_defect_blocked": true,
+  "schematic_mismatch_blocked": true,
+  "negative_setup_slack_blocked": true,
+  "unconstrained_output_blocked": true,
+  "negative_metrics": {
+    "drc": {
+      "shapes_checked": 2,
+      "rule:WIDTH:checked": 1,
+      "rule:WIDTH:violations": 1,
+      "rule:SPACE:checked": 1,
+      "rule:SPACE:violations": 0,
+      "rules_checked": 2,
+      "violation_count": 1
+    },
+    "lvs": {
+      "layout_devices": 1,
+      "reference_devices": 1,
+      "layout_nets": 2,
+      "reference_nets": 2,
+      "circuits_compared": 1,
+      "matched": 0,
+      "violation_count": 1
+    },
+    "sta": {
+      "clocks": 1,
+      "constraints_ok": 1,
+      "setup_paths_reported": 1,
+      "setup_worst_slack_ns": -1.400000095367,
+      "setup_tns_ns": -1.400000095367,
+      "hold_paths_reported": 1,
+      "hold_worst_slack_ns": 0.399999976158,
+      "hold_tns_ns": 0.0,
+      "wns_ns": -1.400000095367,
+      "tns_ns": -1.400000095367,
+      "violation_count": 1
+    }
+  },
+  "executable_identities": {
+    "drc": {
+      "path": "/usr/lib/klayout/klayout",
+      "sha256": "5a0fb60d0e2128ccab82cef157042568323989077f64d4bba830674fccd75ff5",
+      "size": 35392,
+      "unchanged": true
+    },
+    "lvs": {
+      "path": "/usr/lib/klayout/klayout",
+      "sha256": "5a0fb60d0e2128ccab82cef157042568323989077f64d4bba830674fccd75ff5",
+      "size": 35392,
+      "unchanged": true
+    },
+    "sta-tt": {
+      "path": "/home/runner/work/_temp/opentapeout-native/bin/sta",
+      "sha256": "5d5f64607771a9d0d1677c5834d6b15423bc020155021d1cbd16dede59b2cbdf",
+      "size": 8928856,
+      "unchanged": true
+    },
+    "sta-ss": {
+      "path": "/home/runner/work/_temp/opentapeout-native/bin/sta",
+      "sha256": "5d5f64607771a9d0d1677c5834d6b15423bc020155021d1cbd16dede59b2cbdf",
+      "size": 8928856,
+      "unchanged": true
+    }
+  }
+}

@@ -118,7 +118,7 @@ python scripts/qualify_yosys.py --output yosys-qualification.json
 python scripts/qualify_physical.py --output physical-qualification.json
 ```
 
-The local v0.3 suite has 402 passing tests and 95.15% Python statement coverage.
+The local v0.3 suite has 409 passing tests and 95.16% Python statement coverage.
 The separate native CI jobs test real tools, not only hand-authored parser fixtures.
 See [validation records](docs/VALIDATION.md) for exact versions, results and limits.
 The earlier 81.3x measurement concerned only latest-run selection versus our own

@@ -57,6 +57,19 @@ actual argv/version. Parsing cannot authenticate a dishonest execution environme
 
 Run `scripts/qualify_yosys.py` with an actual Yosys executable; see the separate
 GitHub CI job for its exact installed version and report. This qualifies the small
-combinational example only. Native DRC/LVS/STA and foundry rule coverage remain
-outstanding. Primary source for the explicit proof command and success transcript:
+combinational example only. At v0.2, native physical qualification was outstanding;
+the v0.3 collector section below describes subsequent work. Foundry coverage is
+still not established. Primary source for the explicit proof command and success transcript:
 https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/more_scripting/model_checking.rst
+
+
+## Physical collectors (v0.3)
+
+The `klayout-drc`, `klayout-lvs` and `opensta` adapters use strict run-bound
+collector frames and can consume managed stdout with `--report-source stdout`.
+They enforce native-format/check-kind pairing and reject nonempty native stderr.
+They are narrow, version-qualified collector contracts, not universal vendor parsers.
+See [physical qualification](PHYSICAL_QUALIFICATION.md) for scripts, rule and
+constraint coverage, defect controls and limits, and [policy v2](POLICY_V2.md) for
+exact input, format, corner and executable binding. Observed native execution is
+recorded separately in [validation](VALIDATION.md).

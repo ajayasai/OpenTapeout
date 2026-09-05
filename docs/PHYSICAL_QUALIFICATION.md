@@ -22,6 +22,9 @@ commits. It includes required development headers and regenerates the old CUDD
 Autotools build system. It does not vendor or redistribute those tools under
 OpenTapeout's license. Package dependencies and compiler/system images are not
 fully locked, so this is not a hermetic reproducible-build claim.
+The Ubuntu CI installer puts the actual KLayout ELF executable on PATH rather than
+its small shell wrapper, and checks the ELF magic before exposing that path.
+Its shared libraries and plugins are still outside a single-launcher hash.
 
 ## What the harness exercises
 

@@ -1,0 +1,80 @@
+{
+  "version": "0.3.0",
+  "date": "2026-09-05",
+  "python": "3.13.5",
+  "tests": {
+    "passed": 409,
+    "failed": 0,
+    "skipped": 0,
+    "added_since_v0_2": 109
+  },
+  "coverage": {
+    "scope": "Python statement coverage, not branch coverage or native tool coverage",
+    "covered": 2122,
+    "total": 2230,
+    "percent": 95.15695067264573
+  },
+  "dependencies": {
+    "cryptography": "46.0.4",
+    "fastapi": "0.128.2",
+    "uvicorn": "0.48.0",
+    "pytest": "9.0.2",
+    "pytest-cov": "7.0.0",
+    "setuptools": "82.0.1"
+  },
+  "runtime_sha256": {
+    "src/opentapeout/__init__.py": "aecce13d2e8a28c7b5be6f142359890ca3cc06cabb3eddb2a56aefa9c273833d",
+    "src/opentapeout/__main__.py": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4",
+    "src/opentapeout/bundle.py": "b42dd4a6ef50a0a8f760018cb7f6530aef16742aaefd89ec2805b26dbfc14add",
+    "src/opentapeout/cli.py": "55b4f5362c2330c0d9b523e63845786644d292df0cddf58c7c3695356a61fec1",
+    "src/opentapeout/commands.py": "980e81f311eaf86890c2ba237f1d0ecd8d60f22718a2904499f4620d766366b4",
+    "src/opentapeout/delivery.py": "fd6ca250ae609d10e3e46fbecf14d3a498e200dc8ff0e93a04f537cb1e8a467a",
+    "src/opentapeout/demo.py": "e7660ecf09459b02618a3444c79e26b393e5eb11f1ad749e515d1c6d3e407cbf",
+    "src/opentapeout/engine.py": "16ab291662f3409a54dcdfbb67ea9dfdcccd18553a9c29d69332fe6e61c04d58",
+    "src/opentapeout/git_capture.py": "e1adb6b4e86037c3af13192c06ac5a5f750c51b76fa93fcdc3f411bee1b41ff2",
+    "src/opentapeout/graph.py": "f17d6d2088a86f2f730a776383a6e1eb864efee7dae43174142e5dabf0271253",
+    "src/opentapeout/lifecycle.py": "171ce8bfcc9130823c394f70ab152a1c0f4c7d0c8769be09595d41896673e4dc",
+    "src/opentapeout/native.py": "b926842300d8d10f14971c6c1b7b3d0c76d688552e8a23c6c9829d8edd77cff8",
+    "src/opentapeout/parsers.py": "40e2500053542dee366b0719fccf44ce667cc3a54e4fe4c13659897df89ad4eb",
+    "src/opentapeout/physical.py": "50eeadeac85756b01a5b518ba726e064f7be5ed4b2f856995bcfcf0e42d446b0",
+    "src/opentapeout/pinning.py": "e42def68906d58bac842ac5a32b8cdefe0980941547e4a54029836bd6364d8b0",
+    "src/opentapeout/planning.py": "a72d5583861cad0b81fdeca64fa199272616c81aa068c79511682c509850f724",
+    "src/opentapeout/policy.py": "f8608a57fa76f84077897ca6acd445d63e84842f36c20a0a1ac53bc8e40cdcf0",
+    "src/opentapeout/signing.py": "9da368408039f0cea03fe719848ee898c5837b2523f5b7c83856de5307c6294c",
+    "src/opentapeout/store.py": "6db77c7b1664ace95e61ebce0036fbfc39bf32b7fece276bdd3759f8034b458b",
+    "src/opentapeout/tree_capture.py": "23f9ab414631c1af027dabe5363ee10d8e3976cca9eb25149f96d717b592ac3a",
+    "src/opentapeout/util.py": "f24d5b19531ceec9e83d21ef0582f76092d41fa248d033786e053d928113517e",
+    "src/opentapeout/web.py": "a54ec4c17aacc073cd1013ef5e8108c26a0c396aa917983c359f5597d0b226e7"
+  },
+  "collector_sha256": {
+    "examples/physical/drc.drc": "01bb6dff4f7e35c387e061e2c89d8b23b7bb1d6776f5197b796eecc5ab94d17e",
+    "examples/physical/lvs.lvs": "731acebbcceff8cc2cfe99677d5d752f46086b645faeaedca2ac095bc48033f0",
+    "examples/physical/make_layout.rb": "13e1ccebe16c7300ca1b77ba2ab99bb57be8a016e68aaf4712cfcf6ab620af46",
+    "examples/physical/resistor.cir": "1bc2fc423aacd7af68350b91e9daaf0031ea88982f7e61ca398757b752101eec",
+    "examples/physical/sta.tcl": "97348b08ddeb35cbc874cfc2268693194b9aa964f065a73baa2b1ed3d9173cc0",
+    "examples/physical/timing.lib": "06b4334d029eb3c51d616bfa8bfee00b763c7e8adea4d32f391be701f3c5a0f6",
+    "examples/physical/timing.sdc": "78e42f076d6f9a42cd9b81ac311690bcf3eafb0f0a930c9cb08a3c4903193c0c",
+    "examples/physical/timing.v": "9d16b15eac405874586188432d3879d80022fc454122d8b1cc0c6befc316bddf"
+  },
+  "native_harness_sha256": "1bf25337c971443af2eb2c6750972af4b3b0b41ccb7a9c97bed3adad7fd7d333",
+  "installed_wheel_stale_gate": {
+    "exit_code": 2,
+    "blockers": [
+      "CANDIDATE_CHANGED",
+      "DERIVATION_STALE",
+      "RESULT_STALE"
+    ]
+  },
+  "browser": {
+    "browser": "144.0.7559.96",
+    "passed": true,
+    "javascript_errors": [],
+    "mobile_horizontal_overflow": false
+  },
+  "limits": [
+    "Educational physical and timing microflows, not one end-to-end chip",
+    "No foundry PDK or licensed commercial engine tested",
+    "No commercial head-to-head benchmark or independent security audit",
+    "Executable pinning does not make execution hermetic or defeat a hostile administrator"
+  ]
+}
