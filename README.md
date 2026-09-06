@@ -4,7 +4,7 @@
 
 [![Tests](https://github.com/ajayasai/OpenTapeout/actions/workflows/ci.yml/badge.svg)](https://github.com/ajayasai/OpenTapeout/actions/workflows/ci.yml)
 
-**v0.3.0 alpha — Apache-2.0.** An offline-first tapeout evidence and release ledger:
+**v0.4.0 alpha — Apache-2.0.** An offline-first tapeout evidence and release ledger:
 content-addressed inputs, dependency-aware freshness, exact-input policies, signed
 reviewer decisions, controlled deliveries and verifiable release history.
 
@@ -30,21 +30,34 @@ keys are generated locally; never use them in production. The dashboard is read-
 private signing keys stay outside the browser. `plan RC-001 --changed rtl` explains
 hypothetical rebuilds without executing tools or authorizing release.
 
-## What changed in v0.3
+## What changed in v0.4
 
-| Capability | Implemented behavior |
-|---|---|
-| Exact-input policy | Requires particular resource IDs and SHA-256 pins, allowed tool IDs, exact corner definitions and report formats, beyond merely requiring some resource of the right kind. |
-| Executable identity | A registered launcher SHA-256 is checked before execution and afterward; mismatches block. The observed identity is preserved in evidence and checked by policy. |
-| Reviewed policy locks | `pin-policy` produces a separate v2 review draft from fresh managed runs. It never overwrites active policy, changes the ledger or approves a release. |
-| Native stdout capture | Captures tool stdout directly by hash; physical adapters are bound to their check kinds. Native diagnostics or nonempty stderr cannot silently become success. |
-| Physical collectors | Narrow KLayout DRC/LVS and OpenSTA setup/hold protocols with explicit completion, named rules, nonempty geometry/netlists/paths, finite metrics and consistency checks. |
-| Native qualification | Separate CI microflows exercise actual geometry checks, extracted-netlist comparison, two timing libraries, stale input detection, deliberate defects and signed offline archive verification. |
+**A project-scoped team review API, not just another report adapter.** Compatible
+OAuth access tokens establish identity; external project permissions grant access;
+detached Ed25519 commands authorize exact changes. Reviewer private keys stay on
+client machines. The gateway can create candidates, accept independent approvals,
+revoke reviews and withdraw releases. It cannot execute EDA tools or change policy.
 
-Read [exact policy migration and trust boundaries](docs/POLICY_V2.md),
-[physical collectors and qualification scope](docs/PHYSICAL_QUALIFICATION.md), and
-[observed validation](docs/VALIDATION.md). A configured workflow is not by itself a
-passed qualification. The v1 policy and existing workflows remain supported.
+Each command binds the project, ledger sequence/hash, governance digest and a
+five-minute validity window. Mutation and durable retry receipt commit in one
+transaction. Concurrent writers receive explicit conflicts, never silent overwrite.
+Policy, access and key changes are rechecked before commit. Audit pagination uses
+hash-bound cursors, and lost responses can be recovered as historical receipts.
+
+```bash
+python -m pip install '.[team]'
+# Requires independently provisioned identity, project configuration and TLS:
+opentapeout serve-team --config /etc/opentapeout/team.json \
+  --ssl-certfile /etc/opentapeout/tls.crt --ssl-keyfile /etc/opentapeout/tls.key
+```
+
+Read [team deployment, permissions and client commands](docs/TEAM_API.md).
+This is an OAuth access-token resource server, **not a turnkey browser SSO login**.
+The original dashboard remains read-only. Project-level API isolation is not OS,
+container or per-artifact isolation. Local filesystem administrators remain trusted.
+
+The v0.3 [exact-input policy](docs/POLICY_V2.md), executable identity checks and
+[native physical collectors](docs/PHYSICAL_QUALIFICATION.md) remain available.
 
 ## Core release controls
 
@@ -110,7 +123,7 @@ See [v0.2 lifecycle commands](docs/UPGRADE_V0_2.md) for the retained delivery wo
 ## Test and reproduce native checks
 
 ```bash
-python -m pip install '.[web,dev]'
+python -m pip install '.[web,dev,team]'
 pytest --cov=opentapeout --cov-report=term-missing
 python -m build
 # Requires actual tools; missing executables are errors, not skipped passes.
@@ -118,7 +131,10 @@ python scripts/qualify_yosys.py --output yosys-qualification.json
 python scripts/qualify_physical.py --output physical-qualification.json
 ```
 
-The local v0.3 suite has 409 passing tests and 95.16% Python statement coverage.
+The v0.4 upgrade adds real-token, real-signature team tests, concurrent-thread and
+process races, real process-crash rollback, and a live HTTPS qualification harness.
+Run `python scripts/qualify_team.py --output team-qualification.json` after installing
+`.[team]`. Current observed counts and coverage are recorded in the validation report.
 The separate native CI jobs test real tools, not only hand-authored parser fixtures.
 See [validation records](docs/VALIDATION.md) for exact versions, results and limits.
 The earlier 81.3x measurement concerned only latest-run selection versus our own
@@ -132,8 +148,8 @@ capabilities beyond this application's tested scope. [Competitive scope](docs/CO
 distinguishes advertised vendor capabilities, tested OpenTapeout behavior and unknowns.
 
 Outstanding work includes full-chip/PDK and proprietary-tool qualification, complete
-signoff modes and corners, enterprise SSO and permission-scoped multi-user writes,
-distributed storage and million-event replay, hardware-backed signing, independent
+signoff modes and corners, turnkey IdP/browser SSO integration and per-artifact authorization beyond the new
+project-scoped team gateway, distributed storage and million-event replay, hardware-backed signing, independent
 security review and real foundry-service integration. Dependency ranges are not an
 environment lock. The managed runner is not a sandbox. A hash and signature do not
 prove correct manufacturing geometry or truthful tool execution.

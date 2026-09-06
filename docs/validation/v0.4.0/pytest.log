@@ -1,0 +1,43 @@
+........................................................................ [ 12%]
+........................................................................ [ 25%]
+........................................................................ [ 37%]
+........................................................................ [ 50%]
+........................................................................ [ 62%]
+........................................................................ [ 75%]
+........................................................................ [ 87%]
+......................................................................   [100%]
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.13.5-final-0 ________________
+
+Name                              Stmts   Miss  Cover   Missing
+---------------------------------------------------------------
+src/opentapeout/__init__.py           1      0   100%
+src/opentapeout/__main__.py           2      2     0%   1-2
+src/opentapeout/bundle.py           127      3    98%   92-93, 162
+src/opentapeout/cli.py              257     66    74%   159-160, 162-169, 171-172, 174-177, 184-185, 188, 191-193, 195, 197-200, 202-204, 206-213, 218, 220-221, 224-225, 230, 234, 236-241, 243-248, 252-263, 271, 281
+src/opentapeout/commands.py          83      1    99%   95
+src/opentapeout/delivery.py         152      3    98%   114-115, 172
+src/opentapeout/demo.py              59      0   100%
+src/opentapeout/engine.py           334      6    98%   65, 267, 276-277, 279-280
+src/opentapeout/git_capture.py       25      6    76%   20-21, 28-31
+src/opentapeout/graph.py            115      4    97%   96-97, 103-104
+src/opentapeout/lifecycle.py         69      0   100%
+src/opentapeout/native.py            30      3    90%   36, 43-44
+src/opentapeout/parsers.py          102      1    99%   126
+src/opentapeout/physical.py         109      0   100%
+src/opentapeout/pinning.py           37      0   100%
+src/opentapeout/planning.py         111      1    99%   108
+src/opentapeout/policy.py           205      3    99%   121, 153, 156
+src/opentapeout/signing.py           68      0   100%
+src/opentapeout/store.py            124      1    99%   137
+src/opentapeout/team.py             196      0   100%
+src/opentapeout/team_auth.py         80      0   100%
+src/opentapeout/team_cli.py         104      0   100%
+src/opentapeout/team_web.py         135      0   100%
+src/opentapeout/tree_capture.py      21      1    95%   17
+src/opentapeout/util.py             127      4    97%   44-45, 147-148
+src/opentapeout/web.py               83      3    96%   76, 90, 106
+---------------------------------------------------------------
+TOTAL                              2756    108    96%
+Coverage JSON written to file /mnt/data/ot-v04-coverage.json
+574 passed in 44.08s

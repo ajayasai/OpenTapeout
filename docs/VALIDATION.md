@@ -1,5 +1,56 @@
 # Validation record
 
+## v0.4.0 — observed 2026-09-06
+
+**574 local tests passed, no failures or skips**, including 165 new team tests.
+Python 3.13.5 statement coverage: **2,648 / 2,756 statements (96.08%)**.
+The four new team modules have 100% statement coverage in this run; that is not
+branch coverage, security assurance, or independent review. Raw test output,
+dependency versions, code hashes and HTTPS results are in `validation/v0.4.0/`.
+
+The added tests exercise real RSA access-token and Ed25519 command signatures,
+wrong issuer/audience/client/type, expired and malformed tokens, untrusted JWT
+key URLs, principal impersonation, project isolation, read/write/audit permissions,
+revocation, exact checkpoint/governance conflicts, retry durability, pagination,
+HTTPS defaults and safe failures. Existing 409 tests remain in the suite.
+
+Eight competing threads produce exactly one committed mutation and seven explicit
+conflicts; four competing processes produce one commit and three conflicts. Eight
+retries of identical signed bytes produce one mutation and identical receipts. A
+real child process terminated with `os._exit(23)` after candidate insertion and
+before receipt/commit leaves neither partial state nor a consumed request ID;
+retry after reopening succeeds. Injected governance changes and token expiry during
+validation roll back the entire transaction.
+
+### Observed live HTTPS workflow
+
+`python scripts/qualify_team.py --output team-qualification.json` starts a real
+Uvicorn subprocess, creates an ephemeral TLS certificate and RSA test issuer,
+and sends signed requests through the normal HTTPS client. The client rejects
+the untrusted certificate, then verifies the explicitly trusted certificate.
+A candidate is created, two distinct reviewers approve it, the resulting full
+archive verifies offline, one of eight competing HTTP writes commits while seven
+return HTTP 409, and revoking a review blocks the live gate. Reviewer private
+keys remain in the test client process, not API request bodies.
+
+The issuer and EDA evidence are synthetic. This test is not a production IdP,
+enterprise SSO, hardware-key, external-network, load or penetration test. The
+existing read-only dashboard was not redesigned in v0.4. No new browser usability
+claim is inferred from API tests. Native Yosys and physical CI jobs are retained;
+versioned v0.3 native observations below remain historical until a newer run is
+explicitly recorded. A configured workflow is not by itself a passing run.
+
+### Remaining qualification boundaries
+
+No commercial head-to-head trial, production tapeout, external IdP deployment,
+independent security audit, per-artifact permissions, hostile-tenant isolation,
+geo-restriction, distributed database/storage, million-event replay, HSM signing
+or real foundry API acceptance was established. Governance reloads are not an
+atomic transaction with operator filesystem changes or IdP sessions. Full-history
+replay remains on every request. Existing local CLI operators retain filesystem
+trust; the gateway does not turn a shared writable filesystem into a security
+boundary. Docker was not tested in this upgrade.
+
 ## v0.3.0 — observed 2026-09-05
 
 **409 local tests passed, no failures or skips.** Python 3.13.5. Python statement

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — project-scoped team review
+
+- Optional OAuth access-token verification with fixed RS256, external JWKS and explicit project permissions.
+- Detached Ed25519 candidate/approval/revocation/withdrawal commands; no server-held reviewer keys.
+- Atomic ledger compare-and-swap, expiring commands, idempotent retries and historical receipt recovery.
+- Authorization rechecks, hash-bound audit pagination and defensive HTTPS CLI transport.
+- Real-token, concurrent-process and process-crash regressions plus live HTTPS qualification.
+- Existing physical/evidence controls preserved; no claim of enterprise or foundry certification.
+
 ## 0.3.0 — 2026-09-05
 
 - Add exact-input policy v2, allowed tools/formats and reviewed policy-lock generation.

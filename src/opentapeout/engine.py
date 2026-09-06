@@ -23,7 +23,8 @@ from .util import (TapeoutError, canonical, digest, ensure, identifier, now, saf
 def state_from(events: list[dict]) -> dict:
     state = {"project": None, "resources": {}, "runs": {}, "waivers": {}, "revoked_waivers": set(),
              "candidates": {}, "approvals": [], "releases": {}, "receipts": [],
-             "revoked_approvals": {}, "withdrawals": {}, "deliveries": {}, "delivery_receipts": []}
+             "revoked_approvals": {}, "withdrawals": {}, "deliveries": {}, "delivery_receipts": [],
+             "team_commands": {}}
     for event in events:
         kind, payload = event["type"], event["payload"]
         if kind == "project.created":
@@ -56,6 +57,10 @@ def state_from(events: list[dict]) -> dict:
             state["releases"][payload["id"]] = payload
         elif kind == "receipt.recorded":
             state["receipts"].append(payload)
+        elif kind == "team.command":
+            ensure(payload["request_id"] not in state["team_commands"], "Duplicate team request ID")
+            state["team_commands"][payload["request_id"]] = {**payload,
+                "checkpoint": {"seq": event["seq"], "hash": event["hash"]}}
         else:
             raise TapeoutError(f"Unknown ledger event type: {kind}")
     return state
@@ -318,28 +323,32 @@ class Engine:
 
     def candidate(self, name: str, notes: str, deliveries: dict[str, str], policy: dict, trust: Trust,
                   actor: str = "operator") -> str:
+        with self.store.transaction(write=True) as tx:
+            return self._candidate(tx, name, notes, deliveries, policy, trust, actor)
+
+    def _candidate(self, tx: Transaction, name: str, notes: str, deliveries: dict[str, str],
+                   policy: dict, trust: Trust, actor: str) -> str:
         identifier(name)
         validate_policy(policy)
         ensure(isinstance(notes, str) and bool(notes.strip()) and len(notes) <= 100000, "Release notes required")
-        with self.store.transaction(write=True) as tx:
-            state = state_from(tx.events)
-            ensure(name not in state["candidates"], "Candidate name already exists; use a new revision")
-            entries = []
-            for filename, resource_id in sorted(deliveries.items()):
-                safe_relative(filename)
-                ensure(Path(filename).suffix.lower() in {".gds", ".gdsii", ".oas", ".oasis"},
-                       "Delivery must be named GDS or OASIS")
-                resource = state["resources"].get(resource_id)
-                ensure(resource is not None and resource["kind"] == "layout" and resource["path"] is not None,
-                       "Delivery must refer to a file-backed layout resource")
-                entries.append({"name": filename, "resource_id": resource_id,
-                                "sha256": resource["sha256"], "size": resource["size"]})
-            candidate = {"schema": "opentapeout.candidate/v1", "project_id": state["project"]["id"],
-                "project_name": state["project"]["name"], "name": name, "created_at": now(),
-                "created_by": actor, "notes": notes, "deliveries": entries}
-            candidate = scope_view(state, candidate, policy, trust)
-            tx.append("candidate.created", {"id": name, "candidate": candidate}, actor)
-            return digest(candidate)
+        state = state_from(tx.events)
+        ensure(name not in state["candidates"], "Candidate name already exists; use a new revision")
+        entries = []
+        for filename, resource_id in sorted(deliveries.items()):
+            safe_relative(filename)
+            ensure(Path(filename).suffix.lower() in {".gds", ".gdsii", ".oas", ".oasis"},
+                   "Delivery must be named GDS or OASIS")
+            resource = state["resources"].get(resource_id)
+            ensure(resource is not None and resource["kind"] == "layout" and resource["path"] is not None,
+                   "Delivery must refer to a file-backed layout resource")
+            entries.append({"name": filename, "resource_id": resource_id,
+                            "sha256": resource["sha256"], "size": resource["size"]})
+        candidate = {"schema": "opentapeout.candidate/v1", "project_id": state["project"]["id"],
+            "project_name": state["project"]["name"], "name": name, "created_at": now(),
+            "created_by": actor, "notes": notes, "deliveries": entries}
+        candidate = scope_view(state, candidate, policy, trust)
+        tx.append("candidate.created", {"id": name, "candidate": candidate}, actor)
+        return digest(candidate)
 
     def _gate(self, tx: Transaction, name: str, policy: dict, trust: Trust,
               *, include_approvals: bool = True) -> dict:

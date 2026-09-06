@@ -1,5 +1,14 @@
 # Roadmap and acceptance criteria
 
+## Delivered in v0.4.0
+
+Optional project-scoped API with verified RS256 access-token identity, explicit
+permissions, detached Ed25519 commands, atomic checkpoint compare-and-swap,
+idempotent retries, historical receipts and hash-bound audit pages. Real HTTPS,
+thread/process concurrency, authorization rollback and process-death tests run
+against synthetic evidence. This is not interactive SSO, adversarial multi-tenant
+isolation or distributed storage. See TEAM_API.md and VALIDATION.md.
+
 ## Delivered in v0.3.0
 
 Exact-input policy v2, tool/format allowlists, executable SHA-256 checks, reviewed
@@ -27,14 +36,14 @@ Yosys and physical microflows do not meet these full-chip signoff goals.
 
 ## P1 — enterprise trust and deployment
 
-OIDC-backed runner identity, enterprise SSO, independently authenticated reviewer
-identity, reviewed permission-scoped write APIs, remote/HSM signing, independent
+OIDC-backed runner identity, enterprise SSO deployment and external-provider interoperability,
+per-artifact authorization, read-access audit, remote/HSM signing, independent
 status distribution and real foundry receipt integration. A recipient signature is
 not yet a foundry API acknowledgment. Disclosure allowlists are not legal compliance.
 
 ## P2 — distributed scale and interoperability
 
-PostgreSQL/multi-user concurrency, pluggable object storage, cache/snapshot-backed
+PostgreSQL/distributed concurrency beyond the tested local SQLite gateway, pluggable object storage, cache/snapshot-backed
 replay and recovery drills; benchmarks with million-event ledgers and realistic
 large artifacts. The selector optimization does not solve full-history replay or
 rehashing costs. Qualify a documented hardware BOM exchange schema and actual

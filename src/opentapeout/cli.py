@@ -118,6 +118,8 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8080)
     register_commands(sub)
+    from .team_cli import register as register_team
+    register_team(sub)
     return root
 
 
@@ -136,6 +138,10 @@ def markdown_gate(report: dict) -> str:
 
 
 def dispatch(args: argparse.Namespace) -> tuple[object, int]:
+    from .team_cli import dispatch as dispatch_team
+    team_result = dispatch_team(args)
+    if team_result is not None:
+        return team_result
     policy_path = args.policy or args.root / "policy.json"
     trust_path = args.trust or args.root / "trust.json"
     def policy() -> dict:

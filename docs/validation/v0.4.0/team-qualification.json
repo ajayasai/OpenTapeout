@@ -1,0 +1,17 @@
+{
+  "concurrent_commits": 1,
+  "concurrent_requests": 8,
+  "duplicate_retry_idempotent": true,
+  "explicit_conflicts": 7,
+  "identity_spoof_blocked": true,
+  "independent_reviewers": 2,
+  "offline_archive_verified": true,
+  "qualified": true,
+  "reviewer_private_keys_received_by_API": false,
+  "revocation_blocks_live_gate": true,
+  "scope": "synthetic EDA; real loopback HTTPS, RSA tokens, Ed25519 reviews and SQLite transactions",
+  "signed_candidate_created": true,
+  "transport": "verified loopback HTTPS with ephemeral certificate; NOT an external-IdP deployment",
+  "untrusted_TLS_certificate_rejected": true,
+  "version": "0.4.0"
+}

@@ -1,4 +1,4 @@
-# Competitive scope — reviewed 2026-09-05
+# Competitive scope — reviewed 2026-09-06
 
 Universal superiority has not been established. A public feature page can establish
 that a capability is advertised; silence on that page cannot establish its absence.
@@ -23,6 +23,28 @@ No licensed commercial product was installed or benchmarked for this release.
   for that entire scope.
   https://www.siemens.com/en-us/digital-thread/integrated-lifecycle-management/semiconductor/
   https://blogs.sw.siemens.com/electronics-semiconductors/2025/01/29/one-end-to-end-lifecycle-management-solution-is-built-for-todays-rapidly-evolving-ecosystem/
+
+## Current enterprise comparison (v0.4)
+
+Perforce's published 2026 releases include protected-property permissions, release
+previews and coordinated SSO configuration. Keysight's SOS Enterprise announcement
+of February 10, 2026 describes role-based access, audit trails, fine-grained
+permissions and geofencing. These are advertised vendor capabilities, not results
+from our own licensed-product evaluation.
+
+- https://www.perforce.com/products/helix-iplm/whats-new
+- https://www.keysight.com/ie/en/about/newsroom/catalog/news-release.2026.0210-pr26-034-keysight-enables-enterprise-scale-ai-adoption-in-semiconductor-design-with-sos-enterprise.html
+
+OpenTapeout v0.4 adds tested project-scoped permissions and signed team writes with
+verified access-token identity, exact-state concurrency checks and durable retry
+receipts. Its HTTPS qualification uses an ephemeral test issuer, not a deployed
+corporate identity provider. It does not provide geofencing, per-IP/property ACLs,
+interactive SSO, distributed replication, administrator UI or a support SLA.
+
+The intended differentiator is an inspectable combination of signed exact-state
+review commands and independently verifiable evidence. The equivalence or absence
+of that combination in commercial systems remains **unknown**. Source access and
+our own tests do not prove feature or performance superiority.
 
 ## What OpenTapeout demonstrates
 
@@ -51,7 +73,7 @@ revoked approvals, recipient substitution and archive tampering. Record cold/war
 latency, memory, storage, administrator actions and operator effort, with versions,
 configuration and public reproducers wherever disclosure permits.
 
-Qualify multi-corner DRC/LVS/STA with approved tools/PDKs, demonstrate recovery and
-multi-user authorization, and conduct an independent security review. Industrial
+Qualify multi-corner DRC/LVS/STA with approved tools/PDKs, expand recovery and
+multi-user authorization trials on production workloads, and conduct an independent security review. Industrial
 support, native integrations, SSO, availability and scale must be measured rather
 than replaced with an untested checkbox. See ROADMAP.md for the remaining gaps.
